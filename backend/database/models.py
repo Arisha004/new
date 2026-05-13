@@ -12,10 +12,9 @@ DATABASE_URL = os.getenv(
     "postgresql://neondb_owner:npg_Eb8qk5eJSBKz@ep-tiny-cake-aqwe6ew2-pooler.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require"
 )
 
-# Neon requires SSL – connect_args passes it through psycopg2
+# sslmode=require is already set in DATABASE_URL query string
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"sslmode": "require"},
     pool_pre_ping=True,
     pool_recycle=300,
 )
