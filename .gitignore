@@ -1,0 +1,21 @@
+# Python
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
+*.pyo
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Env (keep .env as it has the DB url needed)
+# backend/.env  ← intentionally NOT ignored so it works out of the box
+
+# OS
+.DS_Store
+Thumbs.db
+.history/ 
+py_packages/
+backend/dir

@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --forest:   #1a3a2a;
+  --forest2:  #0f2419;
+  --moss:     #2d5a3d;
+  --leaf:     #4a8c5c;
+  --sage:     #7fb896;
+  --cream:    #fdf6e3;
+  --cream2:   #f5edcf;
+  --amber:    #e8a030;
+  --amber2:   #f5c842;
+  --terra:    #c4603a;
+  --terra2:   #e87a4a;
+  --teal:     #1a7070;
+  --sky:      #2a90a8;
+  --sky2:     #5bbdd4;
+  --lavender: #7b6fa0;
+  --lav2:     #a89fc8;
+  --bg:       #0c1f14;
+  --bg2:      #111f18;
+  --surface:  rgba(255,255,255,0.04);
+  --border:   rgba(255,255,255,0.08);
+  --border2:  rgba(255,255,255,0.15);
+  --text:     #fdf6e3;
+  --muted:    rgba(253,246,227,0.55);
+  --muted2:   rgba(253,246,227,0.28);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--forest2); }
+::-webkit-scrollbar-thumb { background: var(--leaf); border-radius: 3px; }
+
+/* Selection */
+::selection { background: rgba(74,140,92,0.4); color: var(--cream); }
+
+/* Glassmorphism card */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.glass-hover:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--border2);
+}
+
+/* XP bar fill animation */
+@keyframes fillBar {
+  from { width: 0% }
+  to   { width: var(--fill-pct) }
+}
+.xp-bar-fill {
+  animation: fillBar 1s ease-out forwards;
+}
+
+/* Pulse glow for streak */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(232,160,48,0.4); }
+  50%       { box-shadow: 0 0 20px rgba(232,160,48,0.8); }
+}
+.glow-amber { animation: glowPulse 2s ease-in-out infinite; }
+
+/* Floating particles */
+@keyframes float {
+  0%,100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+  50%      { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+}
+.particle { animation: float linear infinite; }
