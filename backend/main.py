@@ -1,9 +1,12 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from database.models import create_tables
+from fastapi.responses import JSONResponse
+from database.models import create_tables, SessionLocal
+from database import get_db
+from sqlalchemy.orm import Session
 from routers import auth, dashboard, profile, ai_tutor
 
 app = FastAPI(
@@ -36,3 +39,12 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "healthy"}
+
+@app.get("/test-db")
+def test_db(db: Session = Depends(get_db)):
+    try:
+        from database.models import User
+        user = db.query(User).filter(User.email == "demo@logicland.io").first()
+        return {"status": "ok", "user": user.email if user else "not found"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
