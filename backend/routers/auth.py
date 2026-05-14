@@ -84,15 +84,29 @@ def register(req: RegisterReq, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=AuthResp)
 def login(req: LoginReq, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == req.email).first()
-    if not user or not verify_password(req.password, user.hashed_password):
-        raise HTTPException(401, "Invalid email or password")
-
-    return AuthResp(
-        access_token=create_access_token(user.id),
-        user_id=user.id, username=user.username,
-        avatar=user.avatar, skill_level=user.skill_level, xp_points=user.xp_points,
-    )
+    try:
+        user = db.query(User).filter(User.email == req.email).first()
+        if not user:
+            raise HTTPException(401, "Invalid email or password")
+        try:
+            pwd_ok = verify_password(req.password, user.hashed_password)
+        except Exception as e:
+            raise HTTPException(500, f"Password verify error: {str(e)}")
+        if not pwd_ok:
+            raise HTTPException(401, "Invalid email or password")
+        try:
+            token = create_access_token(user.id)
+        except Exception as e:
+            raise HTTPException(500, f"Token error: {str(e)}")
+        return AuthResp(
+            access_token=token,
+            user_id=user.id, username=user.username,
+            avatar=user.avatar, skill_level=user.skill_level, xp_points=user.xp_points,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Login error: {str(e)}")
 
 
 @router.get("/me")
