@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LogicLand — Where Kids Conquer Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   LOGICLAND v3 — Enchanted Forest × Warm Magic
+   Palette:
+     --forest   #1a3a2a  (deep forest green)
+     --moss     #2d5a3d  (moss green)
+     --leaf     #4a8c5c  (mid leaf)
+     --sage     #7fb896  (sage accent)
+     --cream    #fdf6e3  (warm parchment)
+     --amber    #e8a030  (warm amber)
+     --amber2   #f5c842  (bright gold)
+     --terracotta #c4603a
+     --teal     #1a6b6b  (deep teal)
+     --sky      #2a8fa8  (sky blue)
+   Fonts: Baloo 2 (display) · Plus Jakarta Sans (body) · JetBrains Mono
+═══════════════════════════════════════════════════ */
+:root{
+  --forest:   #1a3a2a;
+  --forest2:  #0f2419;
+  --moss:     #2d5a3d;
+  --leaf:     #4a8c5c;
+  --sage:     #7fb896;
+  --cream:    #fdf6e3;
+  --cream2:   #f5edcf;
+  --amber:    #e8a030;
+  --amber2:   #f5c842;
+  --terra:    #c4603a;
+  --terra2:   #e87a4a;
+  --teal:     #1a7070;
+  --sky:      #2a90a8;
+  --sky2:     #5bbdd4;
+  --lavender: #7b6fa0;
+  --lav2:     #a89fc8;
+  --bg:       #0c1f14;
+  --bg2:      #111f18;
+  --surface:  rgba(255,255,255,0.04);
+  --border:   rgba(255,255,255,0.08);
+  --border2:  rgba(255,255,255,0.15);
+  --text:     #fdf6e3;
+  --muted:    rgba(253,246,227,0.55);
+  --muted2:   rgba(253,246,227,0.28);
+  --ff-d: 'Baloo 2',cursive;
+  --ff-b: 'Plus Jakarta Sans',sans-serif;
+  --ff-m: 'JetBrains Mono',monospace;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{
+  font-family:var(--ff-b);
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  cursor:none;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── CURSOR ── */
+#cur{
+  width:16px;height:16px;background:var(--amber2);border-radius:50%;
+  position:fixed;top:0;left:0;pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:width .2s,height .2s,background .2s;
+  mix-blend-mode:normal;
+}
+#cur-trail{
+  width:44px;height:44px;
+  border:2px solid rgba(245,200,66,.35);
+  border-radius:50%;position:fixed;top:0;left:0;
+  pointer-events:none;z-index:9998;transform:translate(-50%,-50%);
+}
+#cur.hov{width:52px;height:52px;background:rgba(245,200,66,.15);border:2px solid var(--amber2)}
+
+/* ── NOISE ── */
+.noise{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.025;
+background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px}
+
+/* ── 3D HERO CANVAS ── */
+#hero-canvas{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  z-index:1;pointer-events:none;
+}
+
+/* ── FULL BG CANVAS (stars) ── */
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* ── PROGRESS ── */
+#prog{position:fixed;top:0;left:0;height:3px;z-index:300;width:0%;
+background:linear-gradient(90deg,var(--amber),var(--amber2),var(--sage),var(--sky2));
+background-size:300% 100%;animation:gradMove 3s linear infinite;}
+@keyframes gradMove{0%,100%{background-position:0%}50%{background-position:100%}}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  padding:20px 56px;display:flex;align-items:center;justify-content:space-between;
+  transition:all .5s;
+  background:rgba(10,24,16,.6);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(127,184,150,.09);
+}
+nav.scrolled{
+  background:rgba(10,24,16,.94);backdrop-filter:blur(28px);
+  border-bottom:1px solid rgba(127,184,150,.16);padding:14px 56px;
+  box-shadow:0 4px 32px rgba(0,0,0,.45);
+}
+.nav-logo{
+  font-family:var(--ff-d);font-size:1.7rem;font-weight:800;
+  color:var(--amber2);text-decoration:none;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:10px;
+}
+.logo-gem{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,var(--leaf),var(--teal));
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+  box-shadow:0 4px 20px rgba(74,140,92,.4);
+}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{
+  color:rgba(253,246,227,0.88);text-decoration:none;font-size:.88rem;font-weight:700;
+  transition:color .2s;letter-spacing:.01em;position:relative;
+  text-shadow:0 1px 8px rgba(0,0,0,.5);
+}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:var(--amber2);border-radius:1px;transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.nav-links a:hover{color:#fff}.nav-links a:hover::after{transform:scaleX(1)}
+.nav-cta{
+  background:linear-gradient(135deg,var(--amber),var(--amber2));
+  color:var(--forest2);padding:11px 26px;border-radius:50px;
+  font-weight:800;font-size:.88rem;text-decoration:none;
+  box-shadow:0 4px 24px rgba(232,160,48,.45);
+  transition:transform .2s,box-shadow .2s;
+}
+.nav-cta:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 8px 40px rgba(232,160,48,.6)}
+
+/* ═══ HERO ═══ */
+#hero{
+  min-height:100vh;display:flex;align-items:center;
+  position:relative;overflow:hidden;z-index:2;
+  padding:120px 56px 80px;
+}
+.hero-content{
+  max-width:580px;position:relative;z-index:10;
+  flex-shrink:0;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid rgba(127,184,150,.3);
+  background:rgba(127,184,150,.08);
+  border-radius:100px;padding:7px 18px 7px 10px;
+  font-family:var(--ff-m);font-size:.7rem;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--sage);
+  margin-bottom:28px;opacity:0;transform:translateY(16px);
+}
+.ey-dot{width:22px;height:22px;border-radius:50%;background:rgba(127,184,150,.2);
+display:flex;align-items:center;justify-content:center;font-size:.7rem;animation:spin 8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.hero-h1{
+  font-family:var(--ff-d);
+  font-size:clamp(3.2rem,6.5vw,6.5rem);
+  font-weight:800;line-height:.96;letter-spacing:-.03em;
+  color:var(--cream);margin-bottom:6px;
+  opacity:0;transform:translateY(36px);
+}
+.hero-h1 .accent{
+  display:block;
+  background:linear-gradient(120deg,var(--amber) 0%,var(--amber2) 40%,var(--terra2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-h1 .underlined{position:relative;display:inline-block}
+.hero-h1 .underlined::after{
+  content:'';position:absolute;left:-2px;right:-2px;bottom:-6px;
+  height:5px;background:linear-gradient(90deg,var(--amber),var(--amber2));
+  border-radius:3px;transform:scaleX(0);transform-origin:left;
+}
+
+.hero-p{
+  font-size:1.1rem;color:var(--muted);max-width:460px;line-height:1.75;
+  margin:26px 0 40px;font-weight:500;
+  opacity:0;transform:translateY(20px);
+}
+.hero-p strong{color:var(--cream);font-weight:700}
+
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;opacity:0;transform:translateY(18px)}
+.btn-a{
+  background:linear-gradient(135deg,var(--amber),var(--amber2));
+  color:var(--forest2);padding:15px 34px;border-radius:50px;
+  font-weight:800;font-size:.95rem;text-decoration:none;
+  display:flex;align-items:center;gap:9px;
+  box-shadow:0 6px 32px rgba(232,160,48,.5);
+  transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;
+}
+.btn-a::before{content:'';position:absolute;inset:0;
+background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+transform:translateX(-100%);transition:transform .6s}
+.btn-a:hover::before{transform:translateX(100%)}
+.btn-a:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 48px rgba(232,160,48,.65)}
+.btn-b{
+  border:1.5px solid rgba(127,184,150,.3);color:var(--cream);
+  padding:15px 34px;border-radius:50px;font-weight:700;font-size:.95rem;
+  text-decoration:none;display:flex;align-items:center;gap:9px;
+  background:rgba(255,255,255,.04);
+  transition:border-color .2s,background .2s,transform .2s;
+}
+.btn-b:hover{border-color:rgba(127,184,150,.6);background:rgba(127,184,150,.08);transform:translateY(-2px)}
+
+.hero-stats{
+  margin-top:56px;display:flex;gap:0;
+  opacity:0;transform:translateY(14px);
+}
+.hstat{text-align:left;padding-right:36px;margin-right:36px;border-right:1px solid var(--border)}
+.hstat:last-child{border-right:none;padding-right:0;margin-right:0}
+.hstat-n{font-family:var(--ff-d);font-size:2rem;font-weight:800;color:var(--amber2);line-height:1}
+.hstat-l{font-size:.74rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;margin-top:4px}
+
+/* 3D canvas takes right half */
+.hero-3d{
+  position:absolute;right:0;top:0;bottom:0;
+  width:55%;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%}
+
+/* ═══ TICKER ═══ */
+.ticker{
+  position:relative;z-index:3;
+  border-top:1px solid rgba(127,184,150,.12);
+  border-bottom:1px solid rgba(127,184,150,.12);
+  padding:13px 0;overflow:hidden;
+  background:rgba(26,58,42,.6);
+}
+.ticker-track{display:flex;gap:0;white-space:nowrap;animation:ticker 24s linear infinite}
+.ticker-track span{font-family:var(--ff-m);font-size:.75rem;color:var(--muted2);padding:0 28px;letter-spacing:.08em;text-transform:uppercase}
+.ticker-track .sep{color:var(--amber2);opacity:.6}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ═══ SECTION SHARED ═══ */
+.s-label{
+  font-family:var(--ff-m);font-size:.68rem;font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--sage);
+  margin-bottom:12px;opacity:0;transform:translateX(-16px);
+}
+.s-title{
+  font-family:var(--ff-d);font-size:clamp(2rem,4vw,3.6rem);
+  font-weight:800;line-height:1.06;letter-spacing:-.03em;
+  color:var(--cream);margin-bottom:12px;
+  opacity:0;transform:translateY(24px);
+}
+.s-title em{font-style:normal;color:var(--amber2)}
+.s-sub{font-size:.97rem;color:var(--muted);line-height:1.75;font-weight:500;max-width:480px}
+
+/* ═══ HOW IT WORKS — PINNED ═══ */
+#how-wrap{height:500vh;position:relative}
+#how-pin{position:sticky;top:0;height:100vh;display:flex;align-items:center;overflow:hidden}
+.how-slider{display:flex;gap:0;will-change:transform;align-items:center;padding:0 8vw}
+.how-intro-panel{min-width:38vw;padding-right:8vw;flex-shrink:0}
+.how-card{min-width:360px;padding:0 16px;flex-shrink:0}
+.hcard-inner{
+  background:rgba(26,58,42,.6);border:1px solid rgba(127,184,150,.14);
+  border-radius:24px;padding:36px;position:relative;overflow:hidden;
+  backdrop-filter:blur(12px);transition:border-color .3s;
+}
+.hcard-inner::before{content:'';position:absolute;inset:0;border-radius:24px;
+background:radial-gradient(ellipse at 30% 20%,rgba(127,184,150,.1),transparent 60%);
+opacity:0;transition:opacity .4s}
+.hcard-inner:hover::before{opacity:1}
+.hcard-inner:hover{border-color:rgba(127,184,150,.3)}
+.hcard-num{font-family:var(--ff-d);font-size:5.5rem;font-weight:800;
+color:rgba(127,184,150,.06);line-height:1;margin-bottom:-20px;user-select:none}
+.hcard-icon{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:18px}
+.hci-g{background:rgba(74,140,92,.18);border:1px solid rgba(74,140,92,.3)}
+.hci-t{background:rgba(26,112,112,.18);border:1px solid rgba(26,112,112,.3)}
+.hci-a{background:rgba(232,160,48,.14);border:1px solid rgba(232,160,48,.25)}
+.hci-l{background:rgba(123,111,160,.16);border:1px solid rgba(123,111,160,.28)}
+.hcard-title{font-family:var(--ff-d);font-size:1.45rem;font-weight:800;letter-spacing:-.02em;color:var(--cream);margin-bottom:10px}
+.hcard-desc{font-size:.9rem;color:var(--muted);line-height:1.72}
+.hcard-tag{display:inline-block;font-family:var(--ff-m);font-size:.62rem;font-weight:700;
+letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:100px;
+background:rgba(127,184,150,.12);color:var(--sage);margin-top:16px}
+
+/* scroll arrow */
+.scroll-cue{display:flex;align-items:center;gap:10px;margin-top:28px;
+font-family:var(--ff-m);font-size:.7rem;letter-spacing:.14em;color:var(--muted2);text-transform:uppercase}
+.sc-line{flex:1;max-width:80px;height:1px;background:linear-gradient(90deg,var(--border2),transparent)}
+
+/* ═══ FEATURES ═══ */
+#features{max-width:1160px;margin:0 auto;padding:120px 48px;position:relative;z-index:2}
+.feat-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  grid-template-rows:auto auto;
+  gap:16px;margin-top:60px;
+}
+.fc{
+  background:rgba(26,58,42,.55);border:1px solid var(--border);
+  border-radius:24px;padding:34px;position:relative;overflow:hidden;
+  backdrop-filter:blur(10px);
+  opacity:0;transform:translateY(28px) scale(.97);
+  transition:border-color .3s,box-shadow .3s;
+}
+.fc:hover{border-color:rgba(127,184,150,.25);box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.fc.wide{grid-column:1/3}
+.fc.tall{grid-row:1/3}
+.fc-icon{font-size:2.2rem;margin-bottom:18px;display:block}
+.fc-title{font-family:var(--ff-d);font-size:1.35rem;font-weight:800;letter-spacing:-.02em;color:var(--cream);margin-bottom:10px}
+.fc.wide .fc-title,.fc.tall .fc-title{font-size:1.75rem}
+.fc-desc{font-size:.88rem;color:var(--muted);line-height:1.75;max-width:380px}
+
+/* code block inside wide */
+.f-code{margin-top:22px;background:rgba(0,0,0,.45);border-radius:12px;padding:16px 18px;
+font-family:var(--ff-m);font-size:.76rem;line-height:1.9;border:1px solid rgba(127,184,150,.1);position:relative;overflow:hidden}
+.f-code::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+background:linear-gradient(90deg,transparent,var(--amber2),transparent)}
+.ck{color:#c084fc}.cf{color:#60a5fa}.cs{color:#86efac}.cn{color:var(--amber2)}.cc{color:rgba(255,255,255,.22)}.co{color:#7dd3fc}
+
+/* skill bars */
+.skill-grid{margin-top:22px;display:flex;flex-direction:column;gap:11px}
+.sk-row{display:flex;align-items:center;gap:10px;font-family:var(--ff-m);font-size:.7rem;color:var(--muted2)}
+.sk-n{width:60px;flex-shrink:0}
+.sk-t{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.sk-f{height:100%;border-radius:3px}
+.skf1{background:linear-gradient(90deg,var(--leaf),var(--sage))}
+.skf2{background:linear-gradient(90deg,var(--teal),var(--sky2))}
+.skf3{background:linear-gradient(90deg,var(--amber),var(--amber2))}
+.skf4{background:linear-gradient(90deg,var(--lavender),var(--lav2))}
+
+/* AI orb in tall card */
+.ai-orb{position:absolute;bottom:28px;right:28px;width:110px;height:110px;
+border:1.5px solid rgba(127,184,150,.2);border-radius:50%;
+display:flex;align-items:center;justify-content:center}
+.ai-orb-inner{width:72px;height:72px;border:1.5px solid rgba(127,184,150,.35);
+border-radius:50%;background:rgba(26,112,112,.15);font-size:2rem;
+display:flex;align-items:center;justify-content:center;
+animation:orbSpin 12s linear infinite}
+@keyframes orbSpin{to{transform:rotate(360deg)}}
+
+/* ═══ INTERACTIVE PUZZLE ═══ */
+#demo{padding:120px 0;position:relative;z-index:2;overflow:hidden}
+.demo-wrap{max-width:1160px;margin:0 auto;padding:0 48px}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:56px;align-items:start}
+
+.demo-panel{
+  background:rgba(26,58,42,.6);border:1px solid var(--border);
+  border-radius:24px;padding:30px;position:relative;overflow:hidden;
+  backdrop-filter:blur(12px);
+}
+.demo-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+background:linear-gradient(90deg,transparent,var(--amber2),transparent)}
+
+.tab-bar{display:flex;gap:4px;background:rgba(0,0,0,.3);border-radius:10px;padding:4px;margin-bottom:22px}
+.tab{padding:7px 16px;border-radius:7px;font-family:var(--ff-m);font-size:.72rem;
+cursor:pointer;color:var(--muted);border:none;background:transparent;
+transition:all .2s;font-weight:700;letter-spacing:.04em}
+.tab.on{background:rgba(232,160,48,.12);color:var(--amber2);border:1px solid rgba(232,160,48,.22)}
+
+.blk-pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.blk{
+  font-family:var(--ff-m);font-size:.74rem;padding:8px 14px;border-radius:8px;
+  background:rgba(255,255,255,.05);border:1px solid var(--border2);
+  color:var(--text);cursor:grab;user-select:none;transition:all .2s;
+}
+.blk:hover{background:rgba(245,200,66,.1);border-color:rgba(245,200,66,.35);color:var(--amber2);transform:translateY(-2px)}
+.blk.kw{color:#c084fc;border-color:rgba(192,132,252,.2);background:rgba(192,132,252,.06)}
+.blk.fn{color:#60a5fa;border-color:rgba(96,165,250,.2);background:rgba(96,165,250,.06)}
+.blk.used{opacity:.25;pointer-events:none}
+.blk.dragging{opacity:.3}
+
+.dropzone{min-height:150px;background:rgba(0,0,0,.3);border-radius:12px;
+border:1.5px dashed rgba(255,255,255,.1);padding:12px;
+font-family:var(--ff-m);font-size:.76rem;transition:border-color .2s}
+.dropzone.over{border-color:var(--amber2);background:rgba(245,200,66,.04)}
+.dline{padding:8px 12px;border-radius:8px;min-height:36px;
+border:1px dashed rgba(255,255,255,.06);margin-bottom:6px;
+display:flex;align-items:center;color:var(--muted2);font-size:.73rem;
+transition:all .2s;cursor:pointer}
+.dline.ok{border-color:transparent;background:rgba(255,255,255,.04);color:var(--text)}
+.dline .dk{color:#c084fc;font-weight:700}.dline .df{color:#60a5fa}
+
+.run-btn{
+  margin-top:12px;background:linear-gradient(135deg,var(--amber),var(--amber2));
+  color:var(--forest2);border:none;padding:11px 24px;border-radius:50px;
+  font-weight:800;font-size:.88rem;cursor:pointer;
+  font-family:var(--ff-b);display:flex;align-items:center;gap:8px;
+  transition:all .2s;box-shadow:0 4px 20px rgba(232,160,48,.4);
+}
+.run-btn:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(232,160,48,.6)}
+
+.out-panel{margin-top:12px;background:rgba(0,0,0,.4);border-radius:12px;
+padding:14px;font-family:var(--ff-m);font-size:.74rem;min-height:52px;
+border:1px solid rgba(127,184,150,.1);display:none}
+.out-panel.show{display:block}
+.out-l{opacity:0;transform:translateX(-6px);line-height:1.65;margin-bottom:2px}
+
+/* right viz */
+.viz-panel{background:rgba(26,58,42,.6);border:1px solid var(--border);border-radius:24px;padding:30px;backdrop-filter:blur(12px);position:relative;overflow:hidden}
+.viz-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--sage),transparent)}
+.viz-lbl{font-family:var(--ff-m);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted2);margin-bottom:14px}
+.r-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+.rc{aspect-ratio:1;border-radius:12px;background:rgba(255,255,255,.04);
+border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+font-size:1.2rem;transition:all .4s}
+.rc.bot{background:rgba(26,112,112,.2);border-color:rgba(91,189,212,.35)}
+.rc.coin{background:rgba(232,160,48,.1)}
+.rc.done{background:rgba(74,140,92,.2);border-color:rgba(127,184,150,.4)}
+.score-n{font-family:var(--ff-d);font-size:2.2rem;font-weight:800;color:var(--amber2);text-align:center;line-height:1}
+.score-n span{font-family:var(--ff-b);font-size:.82rem;color:var(--muted);font-weight:500}
+
+/* ═══ PUZZLE SHOWCASE ═══ */
+#showcase{padding:80px 0;position:relative;z-index:2}
+.sc-head{max-width:1160px;margin:0 auto 56px;padding:0 48px}
+.puz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;max-width:1160px;margin:0 auto;padding:0 48px}
+
+/* ── Card flip container ── */
+.puz{
+  perspective:1000px;cursor:pointer;
+  opacity:0;transform:translateY(40px);
+  height:320px;
+}
+.puz-inner{
+  position:relative;width:100%;height:100%;
+  transform-style:preserve-3d;
+  transition:transform .65s cubic-bezier(.4,0,.2,1);
+  border-radius:22px;
+}
+.puz.flipped .puz-inner{ transform:rotateY(180deg); }
+
+/* Front & Back faces */
+.puz-front,.puz-back{
+  position:absolute;inset:0;border-radius:22px;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  padding:24px;overflow:hidden;
+}
+.puz-front{
+  background:rgba(22,50,36,.75);
+  border:1px solid var(--border);
+  backdrop-filter:blur(12px);
+}
+.puz-back{
+  background:linear-gradient(140deg,rgba(26,107,107,.65),rgba(22,50,36,.85));
+  border:1px solid rgba(91,189,212,.25);
+  transform:rotateY(180deg);
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;backdrop-filter:blur(12px);
+}
+
+/* Shimmer scan line */
+.puz-front::before{
+  content:'';position:absolute;top:-100%;left:0;right:0;height:40%;
+  background:linear-gradient(to bottom,transparent,rgba(127,184,150,.07),transparent);
+  animation:scanLine 4s ease-in-out infinite;pointer-events:none;
+}
+@keyframes scanLine{0%{top:-100%}100%{top:200%}}
+
+/* Hover glow border */
+.puz-front::after{
+  content:'';position:absolute;inset:0;border-radius:22px;
+  background:radial-gradient(ellipse at 50% 0%,rgba(127,184,150,.13),transparent 60%);
+  opacity:0;transition:opacity .4s;pointer-events:none;
+}
+.puz:hover .puz-front::after{opacity:1}
+.puz:hover .puz-front{border-color:rgba(127,184,150,.35);box-shadow:0 0 40px rgba(127,184,150,.12),0 16px 48px rgba(0,0,0,.35)}
+
+/* Badge */
+.puz-badge{display:inline-block;font-family:var(--ff-m);font-size:.6rem;font-weight:700;
+letter-spacing:.14em;text-transform:uppercase;padding:4px 11px;border-radius:100px;margin-bottom:11px}
+.pb-loop{background:rgba(91,189,212,.15);color:var(--sky2);border:1px solid rgba(91,189,212,.2)}
+.pb-cond{background:rgba(127,184,150,.14);color:var(--sage);border:1px solid rgba(127,184,150,.2)}
+.pb-func{background:rgba(232,160,48,.12);color:var(--amber);border:1px solid rgba(232,160,48,.2)}
+.pb-var{background:rgba(163,159,200,.12);color:var(--lav2);border:1px solid rgba(163,159,200,.2)}
+.pb-arr{background:rgba(91,189,212,.12);color:var(--sky2);border:1px solid rgba(91,189,212,.2)}
+.pb-algo{background:rgba(196,96,58,.12);color:var(--terra2);border:1px solid rgba(196,96,58,.2)}
+
+/* Name */
+.puz-name{font-family:var(--ff-d);font-size:1.05rem;font-weight:800;letter-spacing:-.02em;color:var(--cream);margin-bottom:10px}
+
+/* Animated code block */
+.puz-code{
+  background:rgba(0,0,0,.45);border-radius:10px;padding:11px 14px;
+  font-family:var(--ff-m);font-size:.68rem;line-height:1.85;margin-bottom:10px;
+  border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;min-height:72px;
+}
+.puz-code::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(127,184,150,.4),transparent);
+}
+/* typewriter cursor blink in code */
+.code-cursor{display:inline-block;width:2px;height:.85em;background:var(--amber2);margin-left:2px;vertical-align:text-bottom;animation:blink .8s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* Progress bar */
+.puz-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-bottom:9px;position:relative}
+.puz-fill{
+  height:100%;border-radius:2px;
+  background:linear-gradient(90deg,var(--sage),var(--sky2));width:0%;
+  position:relative;
+}
+.puz-fill::after{
+  content:'';position:absolute;top:0;right:0;bottom:0;width:20px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.5));
+  animation:shimFill 2s ease-in-out infinite;
+}
+@keyframes shimFill{0%,100%{opacity:0}50%{opacity:1}}
+
+.puz-foot{display:flex;justify-content:space-between;align-items:center;font-family:var(--ff-m);font-size:.64rem;color:var(--muted2)}
+.puz-stars{color:var(--amber2);letter-spacing:2px;font-size:.75rem}
+.puz-hint{font-size:.62rem;color:var(--sage);opacity:.7}
+
+/* Click ripple overlay */
+.puz-ripple{
+  position:absolute;border-radius:50%;background:rgba(127,184,150,.25);
+  width:20px;height:20px;transform:scale(0);pointer-events:none;
+  animation:rippleOut .7s ease-out forwards;
+}
+@keyframes rippleOut{to{transform:scale(30);opacity:0}}
+
+/* Back face content */
+.puz-back-icon{font-size:3rem;margin-bottom:16px;animation:bobBack 2s ease-in-out infinite}
+@keyframes bobBack{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.puz-back-title{font-family:var(--ff-d);font-size:1.2rem;font-weight:800;color:var(--cream);margin-bottom:8px}
+.puz-back-desc{font-size:.82rem;color:var(--muted);line-height:1.65;margin-bottom:18px;max-width:240px}
+.puz-back-score{
+  font-family:var(--ff-d);font-size:2rem;font-weight:800;color:var(--amber2);
+  display:flex;align-items:center;gap:8px;
+}
+.puz-back-stars{font-size:1.2rem;letter-spacing:3px;color:var(--amber2)}
+.puz-solved-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(127,184,150,.15);border:1px solid rgba(127,184,150,.3);
+  border-radius:100px;padding:7px 16px;
+  font-family:var(--ff-m);font-size:.7rem;font-weight:700;color:var(--sage);
+  margin-top:14px;
+}
+
+/* floating particles on cards */
+.puz-particle{
+  position:absolute;border-radius:50%;pointer-events:none;
+  animation:floatPart 3s ease-in-out infinite;
+}
+@keyframes floatPart{0%,100%{transform:translateY(0) rotate(0deg);opacity:.6}50%{transform:translateY(-12px) rotate(180deg);opacity:1}}
+
+/* ═══ TESTIMONIALS ═══ */
+#testi{padding:100px 0 80px;overflow:hidden;position:relative;z-index:2}
+.testi-h{max-width:1160px;margin:0 auto 52px;padding:0 48px}
+.testi-row{display:flex;gap:18px;animation:tscroll 30s linear infinite;width:max-content}
+.testi-row:hover{animation-play-state:paused}
+@keyframes tscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tc{width:308px;flex-shrink:0;background:rgba(26,58,42,.55);border:1px solid var(--border);border-radius:20px;padding:24px;transition:border-color .3s}
+.tc:hover{border-color:rgba(127,184,150,.25)}
+.tc-stars{color:var(--amber2);font-size:.8rem;letter-spacing:3px;margin-bottom:11px}
+.tc-q{font-size:.88rem;line-height:1.75;color:var(--muted);margin-bottom:17px}
+.tc-auth{display:flex;align-items:center;gap:10px}
+.tc-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;background:rgba(26,112,112,.25)}
+.tc-name{font-size:.82rem;font-weight:700;color:var(--cream)}
+.tc-role{font-size:.7rem;color:var(--muted2)}
+
+/* ═══ PRICING ═══ */
+#pricing{max-width:1160px;margin:0 auto;padding:120px 48px;position:relative;z-index:2}
+.p-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:60px}
+.pc{border-radius:24px;padding:36px 32px;border:1px solid var(--border);
+background:rgba(26,58,42,.55);backdrop-filter:blur(10px);
+opacity:0;transform:translateY(34px);transition:border-color .3s,box-shadow .3s,transform .3s}
+.pc:hover{border-color:rgba(127,184,150,.25);box-shadow:0 8px 48px rgba(0,0,0,.35);transform:translateY(-4px)!important}
+.pc.hot{background:linear-gradient(160deg,rgba(45,90,61,.7),rgba(26,58,42,.7));
+border-color:rgba(127,184,150,.4);box-shadow:0 0 60px rgba(74,140,92,.15)}
+.pc.hot:hover{box-shadow:0 0 100px rgba(74,140,92,.25);transform:translateY(-6px)!important}
+.pc-badge{display:inline-block;background:linear-gradient(135deg,var(--amber),var(--amber2));
+color:var(--forest2);font-family:var(--ff-m);font-size:.62rem;font-weight:700;
+letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:12px}
+.pc-tier{font-family:var(--ff-m);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px}
+.pc-price{font-family:var(--ff-d);font-size:3.1rem;font-weight:800;letter-spacing:-.04em;color:var(--cream);line-height:1;margin-bottom:4px}
+.pc-price sup{font-size:1.1rem;vertical-align:top;margin-top:14px}
+.pc-price sub{font-size:.85rem;color:var(--muted);font-family:var(--ff-b);font-weight:400}
+.pc-desc{font-size:.84rem;color:var(--muted);margin-bottom:22px;line-height:1.6}
+.pc-div{height:1px;background:var(--border);margin-bottom:20px}
+.pc-feat{display:flex;align-items:center;gap:10px;font-size:.86rem;color:var(--muted);margin-bottom:10px}
+.pc-feat .on{color:var(--sage)}.pc-feat .off{color:var(--muted2)}
+.pc-btn{display:block;text-align:center;margin-top:22px;padding:13px;border-radius:100px;
+font-weight:800;font-size:.9rem;text-decoration:none;transition:all .2s;
+background:rgba(255,255,255,.06);color:var(--cream);border:1px solid var(--border2)}
+.pc.hot .pc-btn{background:linear-gradient(135deg,var(--amber),var(--amber2));color:var(--forest2);border:none;box-shadow:0 4px 24px rgba(232,160,48,.4)}
+.pc-btn:hover{transform:translateY(-2px)}
+.pc.hot .pc-btn:hover{box-shadow:0 10px 40px rgba(232,160,48,.6)}
+
+/* ═══ FINAL CTA ═══ */
+#final-cta{padding:140px 48px;text-align:center;position:relative;z-index:2;overflow:hidden}
+.fcta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+width:700px;height:700px;pointer-events:none;
+background:radial-gradient(circle,rgba(74,140,92,.09) 0%,transparent 70%);
+animation:gp 6s ease infinite}
+@keyframes gp{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.15)}}
+.fcta-pre{font-family:var(--ff-m);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sage);margin-bottom:20px;opacity:0;transform:translateY(14px)}
+.fcta-h2{font-family:var(--ff-d);font-size:clamp(2.8rem,7vw,5.8rem);font-weight:800;
+letter-spacing:-.04em;line-height:.95;color:var(--cream);margin-bottom:18px;
+opacity:0;transform:translateY(22px)}
+.fcta-h2 em{font-style:normal;background:linear-gradient(120deg,var(--amber),var(--amber2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.fcta-p{font-size:1.05rem;color:var(--muted);max-width:440px;margin:0 auto 40px;line-height:1.7;opacity:0;transform:translateY(14px)}
+.fcta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;opacity:0;transform:translateY(14px)}
+.island-emoji{font-size:5rem;display:block;margin:0 auto 28px;animation:bounce 3s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+
+/* ═══ FOOTER ═══ */
+footer{border-top:1px solid rgba(127,184,150,.1);padding:48px;
+display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;position:relative;z-index:2}
+.f-logo{font-family:var(--ff-d);font-size:1.4rem;font-weight:800;color:var(--amber2);display:flex;align-items:center;gap:8px}
+.f-links{display:flex;gap:24px;list-style:none;flex-wrap:wrap}
+.f-links a{color:var(--muted2);text-decoration:none;font-size:.83rem;font-weight:500;transition:color .2s}
+.f-links a:hover{color:var(--cream)}
+.f-copy{font-size:.76rem;color:var(--muted2)}
+
+/* ═══ PARTICLES ═══ */
+.burst-p{position:fixed;pointer-events:none;z-index:9997;border-radius:50%;width:7px;height:7px}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:920px){
+  nav{padding:14px 24px}nav.scrolled{padding:10px 24px}
+  .nav-links{display:none}
+  .hero-3d{display:none}
+  #hero{padding:120px 24px 80px}
+  .hero-content{max-width:100%}
+  #features,#pricing,#demo .demo-wrap{padding:80px 24px}
+  .feat-grid,.p-grid{grid-template-columns:1fr}
+  .fc.wide,.fc.tall{grid-column:1/-1;grid-row:auto}
+  .demo-grid{grid-template-columns:1fr}
+  .puz-grid{grid-template-columns:1fr;padding:0 24px}
+  footer{flex-direction:column;text-align:center;padding:32px 24px}
+  #how-wrap{height:350vh}
+  .how-card{min-width:78vw}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-trail"></div>
+<div id="prog"></div>
+<div class="noise"></div>
+<canvas id="bg-canvas"></canvas>
+
+<nav id="main-nav">
+  <a class="nav-logo" href="#">
+    <span class="logo-gem">🌿</span>LogicLand
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how-wrap">How It Works</a></li>
+    <li><a href="#demo">Try It</a></li>
+    <li><a href="#showcase">Puzzles</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="/login" style="color:rgba(253,246,227,0.88);text-decoration:none;font-size:.88rem;font-weight:700;padding:10px 22px;border-radius:50px;border:1.5px solid rgba(127,184,150,0.3);transition:all .2s;" onmouseover="this.style.borderColor='rgba(127,184,150,0.7)';this.style.background='rgba(127,184,150,0.08)'" onmouseout="this.style.borderColor='rgba(127,184,150,0.3)';this.style.background='transparent'">Log In</a>
+    <a href="/register" class="nav-cta">Register →</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="ey-dot">✦</span>
+      AI-Powered · Ages 8–16 · Built in Karachi
+    </div>
+    <h1 class="hero-h1">
+      Where Kids<span class="accent"> Code</span>
+    </h1>
+    <p class="hero-p">
+      LogicLand is an <strong>adaptive coding universe</strong> where real programming concepts live inside puzzles, play, and an AI that thinks like your child's best teacher.
+    </p>
+    <div class="hero-ctas">
+      <a class="btn-a" href="#demo">▶ Try a Live Puzzle</a>
+      <a class="btn-b" href="#how-wrap">See How It Works</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n" data-count="12000">0</div><div class="hstat-l">Kids Learning</div></div>
+      <div class="hstat"><div class="hstat-n" data-count="200">0</div><div class="hstat-l">Puzzles</div></div>
+      <div class="hstat"><div class="hstat-n" data-count="98">0</div><div class="hstat-l">Love It %</div></div>
+    </div>
+  </div>
+
+  <div class="hero-3d">
+    <!-- 3D canvas fills this area, pointer events on -->
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span>Loops</span><span class="sep">◆</span><span>Conditionals</span><span class="sep">◆</span>
+    <span>Functions</span><span class="sep">◆</span><span>Arrays</span><span class="sep">◆</span>
+    <span>Algorithms</span><span class="sep">◆</span><span>AI Thinking</span><span class="sep">◆</span>
+    <span>Debugging</span><span class="sep">◆</span><span>Variables</span><span class="sep">◆</span>
+    <span>Recursion</span><span class="sep">◆</span><span>Data Flows</span><span class="sep">◆</span>
+    <span>Loops</span><span class="sep">◆</span><span>Conditionals</span><span class="sep">◆</span>
+    <span>Functions</span><span class="sep">◆</span><span>Arrays</span><span class="sep">◆</span>
+    <span>Algorithms</span><span class="sep">◆</span><span>AI Thinking</span><span class="sep">◆</span>
+    <span>Debugging</span><span class="sep">◆</span><span>Variables</span><span class="sep">◆</span>
+    <span>Recursion</span><span class="sep">◆</span><span>Data Flows</span><span class="sep">◆</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div id="how-wrap">
+  <div id="how-pin">
+    <div class="how-slider" id="howSlider">
+
+      <div class="how-intro-panel">
+        <div class="s-label" style="opacity:1;transform:none">The Method</div>
+        <h2 class="s-title" style="opacity:1;transform:none">Four steps from<br><em>zero to coder</em></h2>
+        <p class="s-sub">No lectures. No textbooks. Just puzzles, play, and an AI that adapts to each child's unique pace.</p>
+        <div class="scroll-cue"><span>SCROLL</span><div class="sc-line"></div><span>→</span></div>
+      </div>
+
+      <div class="how-card">
+        <div class="hcard-num">01</div>
+        <div class="hcard-inner">
+          <div class="hcard-icon hci-g">🌱</div>
+          <div class="hcard-title">Plant Your Seed</div>
+          <p class="hcard-desc">Every learner starts with a personalised seed challenge that matches exactly where they are. No boring intros, no textbooks, no friction.</p>
+          <div class="hcard-tag">Personalised Start</div>
+        </div>
+      </div>
+
+      <div class="how-card">
+        <div class="hcard-num">02</div>
+        <div class="hcard-inner">
+          <div class="hcard-icon hci-t">🧩</div>
+          <div class="hcard-title">Solve Puzzles</div>
+          <p class="hcard-desc">Drag, drop, and arrange logic blocks to guide characters through an ever-growing world. Real code concepts, zero intimidation.</p>
+          <div class="hcard-tag">Learn by Doing</div>
+        </div>
+      </div>
+
+      <div class="how-card">
+        <div class="hcard-num">03</div>
+        <div class="hcard-inner">
+          <div class="hcard-icon hci-a">🤖</div>
+          <div class="hcard-title">AI Adapts to You</div>
+          <p class="hcard-desc">Our AI watches how you play and quietly shifts difficulty — keeping every child in the sweet spot between challenge and confidence.</p>
+          <div class="hcard-tag">Adaptive Engine</div>
+        </div>
+      </div>
+
+      <div class="how-card">
+        <div class="hcard-num">04</div>
+        <div class="hcard-inner">
+          <div class="hcard-icon hci-l">🏆</div>
+          <div class="hcard-title">Master & Advance</div>
+          <p class="hcard-desc">Earn stars, unlock new lands, collect badges. Progress is visible and rewarding — kids and parents see real CS skills grow.</p>
+          <div class="hcard-tag">Real Progress</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="s-label">Platform</div>
+  <h2 class="s-title">Built for <em>Real Learning</em></h2>
+  <div class="feat-grid">
+    <div class="fc wide" id="fc1">
+      <span class="fc-icon">📈</span>
+      <div class="fc-title">Adaptive Progress Tracking</div>
+      <p class="fc-desc">Every child's journey is unique. The AI maps their exact knowledge state and suggests the next best puzzle — never too easy, never frustrating.</p>
+      <div class="f-code">
+        <div><span class="cc"># AI picks your next challenge</span></div>
+        <div><span class="ck">skill_map</span> <span class="co">=</span> <span class="cf">analyze_session</span>(player)</div>
+        <div><span class="ck">next</span> <span class="co">=</span> <span class="cf">recommend</span>(skill_map, difficulty<span class="co">=</span><span class="cs">"adaptive"</span>)</div>
+        <div><span class="cc">→ Zone 3, Level 7 unlocked ✓</span></div>
+      </div>
+    </div>
+    <div class="fc tall" id="fc2">
+      <span class="fc-icon">🧠</span>
+      <div class="fc-title">AI That Thinks Like a Teacher</div>
+      <p class="fc-desc">Understands reasoning patterns. Knows when a child is about to give up and nudges them just right.</p>
+      <div class="skill-grid">
+        <div class="sk-row"><span class="sk-n">Loops</span><div class="sk-t"><div class="sk-f skf1" id="skf1" style="width:82%"></div></div></div>
+        <div class="sk-row"><span class="sk-n">Logic</span><div class="sk-t"><div class="sk-f skf2" id="skf2" style="width:65%"></div></div></div>
+        <div class="sk-row"><span class="sk-n">Arrays</span><div class="sk-t"><div class="sk-f skf3" id="skf3" style="width:91%"></div></div></div>
+        <div class="sk-row"><span class="sk-n">Algos</span><div class="sk-t"><div class="sk-f skf4" id="skf4" style="width:55%"></div></div></div>
+      </div>
+      <div class="ai-orb"><div class="ai-orb-inner">🤖</div></div>
+    </div>
+    <div class="fc" id="fc3"><span class="fc-icon">🏆</span><div class="fc-title">Rewards That Matter</div><p class="fc-desc">Stars, badges, unlockable worlds — every achievement ties to a real skill mastered.</p></div>
+    <div class="fc" id="fc4"><span class="fc-icon">🌐</span><div class="fc-title">Urdu + English</div><p class="fc-desc">Full bilingual UI — switch instantly. Designed for Karachi kids from day one.</p></div>
+    <div class="fc" id="fc5"><span class="fc-icon">👨‍👩‍👧</span><div class="fc-title">Parent Dashboard</div><p class="fc-desc">Real-time skill reports and simple controls. Stay informed without hovering.</p></div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section id="demo">
+  <div class="demo-wrap">
+    <div class="s-label">Try It Now</div>
+    <h2 class="s-title">Drag. Drop. <em>Run.</em></h2>
+    <p class="s-sub" style="margin-top:8px">Arrange the code blocks in the right order and watch the robot collect all 5 coins.</p>
+    <div class="demo-grid">
+      <div class="demo-panel">
+        <div class="tab-bar">
+          <button class="tab on" data-p="build">Build</button>
+          <button class="tab" data-p="trace">Trace</button>
+          <button class="tab" data-p="hint">Hint</button>
+        </div>
+        <div id="pane-build">
+          <div style="font-family:var(--ff-m);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px">Available blocks:</div>
+          <div class="blk-pool" id="blkPool">
+            <div class="blk kw" draggable="true" data-code="for i in range(5):">for i in range(5):</div>
+            <div class="blk fn" draggable="true" data-code="    move_right()">move_right()</div>
+            <div class="blk fn" draggable="true" data-code="    collect_coin()">collect_coin()</div>
+            <div class="blk kw" draggable="true" data-code="print('Done!')">print('Done!')</div>
+          </div>
+          <div style="font-family:var(--ff-m);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px">Your code: <span style="opacity:.5;font-size:.6rem">(click placed block to remove)</span></div>
+          <div class="dropzone" id="dz">
+            <div class="dline" data-i="0"><span style="color:var(--muted2)">line 1 — drop here</span></div>
+            <div class="dline" data-i="1"><span style="color:var(--muted2)">line 2 — drop here</span></div>
+            <div class="dline" data-i="2"><span style="color:var(--muted2)">line 3 — drop here</span></div>
+            <div class="dline" data-i="3"><span style="color:var(--muted2)">line 4 — drop here</span></div>
+          </div>
+          <button class="run-btn" id="runBtn">▶ Run Code</button>
+          <div class="out-panel" id="outPanel"></div>
+        </div>
+        <div id="pane-trace" style="display:none">
+          <div style="background:rgba(0,0,0,.4);border-radius:12px;padding:16px;font-family:var(--ff-m);font-size:.74rem;line-height:2;color:var(--muted2)" id="traceBox">Drop blocks and run code to see trace...</div>
+        </div>
+        <div id="pane-hint" style="display:none">
+          <div style="background:rgba(232,160,48,.06);border:1px solid rgba(232,160,48,.2);border-radius:14px;padding:20px">
+            <div style="color:var(--amber2);font-family:var(--ff-m);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">💡 Hint</div>
+            <p style="font-size:.87rem;color:var(--muted);line-height:1.75">Start with <code style="color:#c084fc;background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px">for i in range(5):</code> to loop 5 times. Inside the loop add <code style="color:#60a5fa;background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px">move_right()</code> then <code style="color:#60a5fa;background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px">collect_coin()</code>. Finish with print.</p>
+          </div>
+        </div>
+      </div>
+      <div class="viz-panel">
+        <div class="viz-lbl">Visual Output</div>
+        <div class="r-grid" id="rg">
+          <div class="rc bot" id="rc0">🤖</div>
+          <div class="rc coin" id="rc1">🪙</div>
+          <div class="rc coin" id="rc2">🪙</div>
+          <div class="rc coin" id="rc3">🪙</div>
+          <div class="rc coin" id="rc4">🪙</div>
+          <div class="rc" id="rc5"></div><div class="rc" id="rc6"></div>
+          <div class="rc" id="rc7"></div><div class="rc" id="rc8"></div><div class="rc" id="rc9"></div>
+        </div>
+        <div class="score-n" id="scoreN">0 <span>coins collected</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PUZZLE SHOWCASE -->
+<section id="showcase">
+  <div class="sc-head">
+    <div class="s-label">The Puzzles</div>
+    <h2 class="s-title">Real Code. <em>Real Fun.</em></h2>
+    <p class="s-sub">Six concept zones. Hundreds of puzzles. Click any card to solve it.</p>
+  </div>
+  <div class="puz-grid">
+    <div class="puz" id="pz1">
+      <div class="puz-inner">
+        <div class="puz-front">
+          <span class="puz-badge pb-loop">Loops</span>
+          <div class="puz-name">Collect All Coins</div>
+          <div class="puz-code" id="pc1-code"></div>
+          <div class="puz-bar"><div class="puz-fill" id="pzf1"></div></div>
+          <div class="puz-foot"><span>Zone 2 · Level 4</span><span class="puz-hint">Click to solve →</span><span class="puz-stars" id="ps1">☆☆☆</span></div>
+        </div>
+        <div class="puz-back">
+          <div class="puz-back-icon">🪙</div>
+          <div class="puz-back-title">Loops Mastered!</div>
+          <div class="puz-back-desc">You used a for loop to collect all 5 coins. That's real Python right there!</div>
+          <div class="puz-back-stars" id="bst1">★★★</div>
+          <div class="puz-solved-badge">✦ Zone Complete</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="puz" id="pz2">
+      <div class="puz-inner">
+        <div class="puz-front">
+          <span class="puz-badge pb-cond">Conditionals</span>
+          <div class="puz-name">The Branching Path</div>
+          <div class="puz-code" id="pc2-code"></div>
+          <div class="puz-bar"><div class="puz-fill" id="pzf2"></div></div>
+          <div class="puz-foot"><span>Zone 3 · Level 2</span><span class="puz-hint">Click to solve →</span><span class="puz-stars" id="ps2">☆☆☆</span></div>
+        </div>
+        <div class="puz-back">
+          <div class="puz-back-icon">🚪</div>
+          <div class="puz-back-title">Decision Maker!</div>
+          <div class="puz-back-desc">if/else lets your code make choices — just like you do every day!</div>
+          <div class="puz-back-stars" id="bst2">★★☆</div>
+          <div class="puz-solved-badge">✦ Path Unlocked</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="puz" id="pz3">
+      <div class="puz-inner">
+        <div class="puz-front">
+          <span class="puz-badge pb-func">Functions</span>
+          <div class="puz-name">Build a Spell</div>
+          <div class="puz-code" id="pc3-code"></div>
+          <div class="puz-bar"><div class="puz-fill" id="pzf3"></div></div>
+          <div class="puz-foot"><span>Zone 4 · Level 1</span><span class="puz-hint">Click to solve →</span><span class="puz-stars" id="ps3">☆☆☆</span></div>
+        </div>
+        <div class="puz-back">
+          <div class="puz-back-icon">🔮</div>
+          <div class="puz-back-title">Spell Crafted!</div>
+          <div class="puz-back-desc">Functions are reusable spells — write once, cast forever!</div>
+          <div class="puz-back-stars" id="bst3">★☆☆</div>
+          <div class="puz-solved-badge">✦ Spell Learned</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="puz" id="pz4">
+      <div class="puz-inner">
+        <div class="puz-front">
+          <span class="puz-badge pb-var">Variables</span>
+          <div class="puz-name">Memory Jars</div>
+          <div class="puz-code" id="pc4-code"></div>
+          <div class="puz-bar"><div class="puz-fill" id="pzf4"></div></div>
+          <div class="puz-foot"><span>Zone 1 · Level 3</span><span class="puz-hint">Click to solve →</span><span class="puz-stars" id="ps4">☆☆☆</span></div>
+        </div>
+        <div class="puz-back">
+          <div class="puz-back-icon">🫙</div>
+          <div class="puz-back-title">Memory Stored!</div>
+          <div class="puz-back-desc">Variables are like labelled jars — your program remembers everything inside!</div>
+          <div class="puz-back-stars" id="bst4">★★★</div>
+          <div class="puz-solved-badge">✦ Data Saved</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="puz" id="pz5">
+      <div class="puz-inner">
+        <div class="puz-front">
+          <span class="puz-badge pb-arr">Arrays</span>
+          <div class="puz-name">Item Backpack</div>
+          <div class="puz-code" id="pc5-code"></div>
+          <div class="puz-bar"><div class="puz-fill" id="pzf5"></div></div>
+          <div class="puz-foot"><span>Zone 5 · Level 2</span><span class="puz-hint">Click to solve →</span><span class="puz-stars" id="ps5">☆☆☆</span></div>
+        </div>
+        <div class="puz-back">
+          <div class="puz-back-icon">🎒</div>
+          <div class="puz-back-title">Backpack Full!</div>
+          <div class="puz-back-desc">Arrays store many things in one place — like a backpack with numbered pockets!</div>
+          <div class="puz-back-stars" id="bst5">★★☆</div>
+          <div class="puz-solved-badge">✦ Items Collected</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="puz" id="pz6">
+      <div class="puz-inner">
+        <div class="puz-front">
+          <span class="puz-badge pb-algo">Algorithms</span>
+          <div class="puz-name">Sort the Treasure</div>
+          <div class="puz-code" id="pc6-code"></div>
+          <div class="puz-bar"><div class="puz-fill" id="pzf6"></div></div>
+          <div class="puz-foot"><span>Zone 6 · Level 5</span><span class="puz-hint">Click to solve →</span><span class="puz-stars" id="ps6">☆☆☆</span></div>
+        </div>
+        <div class="puz-back">
+          <div class="puz-back-icon">💎</div>
+          <div class="puz-back-title">Treasure Sorted!</div>
+          <div class="puz-back-desc">Sorting algorithms are how computers organise the world — you just ran one!</div>
+          <div class="puz-back-stars" id="bst6">★★★</div>
+          <div class="puz-solved-badge">✦ Algorithm Expert</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testi">
+  <div class="testi-h"><div class="s-label">Voices</div><h2 class="s-title">Kids <em>Love</em> It</h2></div>
+  <div style="overflow:hidden">
+    <div class="testi-row">
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-q">"My daughter spent 2 hours solving loop puzzles. She said it felt like a game — I could see her learning real programming the whole time."</p><div class="tc-auth"><div class="tc-av">👩</div><div><div class="tc-name">Sarah M.</div><div class="tc-role">Parent · Karachi</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-q">"The AI adapts so well. My son struggled with conditionals at first — the platform slowed down and he got it. No teacher needed."</p><div class="tc-auth"><div class="tc-av">👨</div><div><div class="tc-name">Ahmed K.</div><div class="tc-role">Parent · DHA</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-q">"I love the puzzle where I collect coins with loops. I showed my friend and she wants to try too! The robot is so cute."</p><div class="tc-auth"><div class="tc-av">👧</div><div><div class="tc-name">Zara, age 10</div><div class="tc-role">Student · Grade 5</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-q">"As a CS teacher I'm impressed by how accurately the puzzles map to real programming concepts. This isn't just a game — it's a curriculum."</p><div class="tc-auth"><div class="tc-av">👩‍🏫</div><div><div class="tc-name">Ms. Fatima</div><div class="tc-role">CS Teacher · Karachi</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-q">"The Urdu mode is a game changer. My kids feel less intimidated when they can switch to their home language while learning to code."</p><div class="tc-auth"><div class="tc-av">👨</div><div><div class="tc-name">Usman R.</div><div class="tc-role">Parent · Gulshan</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-q">"My daughter spent 2 hours solving loop puzzles. She said it felt like a game — I could see her learning real programming the whole time."</p><div class="tc-auth"><div class="tc-av">👩</div><div><div class="tc-name">Sarah M.</div><div class="tc-role">Parent · Karachi</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-q">"The AI adapts so well. My son struggled with conditionals at first — the platform slowed down and he got it. No teacher needed."</p><div class="tc-auth"><div class="tc-av">👨</div><div><div class="tc-name">Ahmed K.</div><div class="tc-role">Parent · DHA</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-q">"I love the puzzle where I collect coins with loops. I showed my friend and she wants to try too! The robot is so cute."</p><div class="tc-auth"><div class="tc-av">👧</div><div><div class="tc-name">Zara, age 10</div><div class="tc-role">Student · Grade 5</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-q">"As a CS teacher I'm impressed by how accurately the puzzles map to real programming concepts. This isn't just a game — it's a curriculum."</p><div class="tc-auth"><div class="tc-av">👩‍🏫</div><div><div class="tc-name">Ms. Fatima</div><div class="tc-role">CS Teacher · Karachi</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-q">"The Urdu mode is a game changer. My kids feel less intimidated when they can switch to their home language while learning to code."</p><div class="tc-auth"><div class="tc-av">👨</div><div><div class="tc-name">Usman R.</div><div class="tc-role">Parent · Gulshan</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="s-label">Plans</div><h2 class="s-title">Pick Your <em>Adventure</em></h2>
+  <div class="p-grid">
+    <div class="pc" id="pr1"><div class="pc-tier">Explorer</div><div class="pc-price">Free</div><p class="pc-desc">Start exploring. No card needed.</p><div class="pc-div"></div><div class="pc-feat"><span class="on">✦</span> 20 puzzles</div><div class="pc-feat"><span class="on">✦</span> 2 concept zones</div><div class="pc-feat"><span class="on">✦</span> Basic tracking</div><div class="pc-feat"><span class="off">○</span><span style="opacity:.3"> AI engine</span></div><div class="pc-feat"><span class="off">○</span><span style="opacity:.3"> Parent dashboard</span></div><a class="pc-btn" href="#">Start Free</a></div>
+    <div class="pc hot" id="pr2"><div class="pc-badge">Most Popular</div><div class="pc-tier">Adventurer</div><div class="pc-price"><sup>PKR</sup>999<sub>/mo</sub></div><p class="pc-desc">Full LogicLand for one child.</p><div class="pc-div"></div><div class="pc-feat"><span class="on">✦</span> All 200+ puzzles</div><div class="pc-feat"><span class="on">✦</span> All 6 concept zones</div><div class="pc-feat"><span class="on">✦</span> AI adaptive engine</div><div class="pc-feat"><span class="on">✦</span> Parent dashboard</div><div class="pc-feat"><span class="on">✦</span> Urdu + English</div><a class="pc-btn" href="#">Start 7-Day Trial</a></div>
+    <div class="pc" id="pr3"><div class="pc-tier">Family</div><div class="pc-price"><sup>PKR</sup>1699<sub>/mo</sub></div><p class="pc-desc">Up to 3 children, one plan.</p><div class="pc-div"></div><div class="pc-feat"><span class="on">✦</span> Everything in Adventurer</div><div class="pc-feat"><span class="on">✦</span> 3 child profiles</div><div class="pc-feat"><span class="on">✦</span> Family progress view</div><div class="pc-feat"><span class="on">✦</span> Priority support</div><div class="pc-feat"><span class="on">✦</span> Early access</div><a class="pc-btn" href="#">Get Family Plan</a></div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="final-cta">
+  <div class="fcta-glow"></div>
+  <span class="island-emoji">🏝️</span>
+  <div class="fcta-pre">Your child's next chapter</div>
+  <h2 class="fcta-h2">Start Exploring<br><em>LogicLand</em> Today</h2>
+  <p class="fcta-p">Join 12,000+ kids already learning to code through play. First 20 puzzles are always free — no card required.</p>
+  <div class="fcta-btns">
+    <a class="btn-a" href="#">🌿 Start Exploring Free</a>
+    <a class="btn-b" href="#">Book a School Demo →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="f-logo"><span>🌿</span> LogicLand</div>
+  <ul class="f-links">
+    <li><a href="#">About</a></li><li><a href="#">Puzzles</a></li>
+    <li><a href="#">For Schools</a></li><li><a href="#">Blog</a></li>
+    <li><a href="#">Privacy</a></li><li><a href="#">Contact</a></li>
+  </ul>
+  <div class="f-copy">© 2025 LogicLand · Built in Karachi 🇵🇰</div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  THREE.JS SCENE 1 — BG STARS + FIREFLIES
+// ═══════════════════════════════════════════════════
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 500);
+  camera.position.z = 30;
+
+  // Stars
+  const sGeo = new THREE.BufferGeometry();
+  const sCount = 900;
+  const sPos = new Float32Array(sCount*3);
+  for(let i=0;i<sCount;i++){
+    sPos[i*3]=(Math.random()-0.5)*280;
+    sPos[i*3+1]=(Math.random()-0.5)*180;
+    sPos[i*3+2]=(Math.random()-0.5)*100-50;
+  }
+  sGeo.setAttribute('position', new THREE.BufferAttribute(sPos,3));
+  scene.add(new THREE.Points(sGeo, new THREE.PointsMaterial({color:0xfdf6e3, size:0.22, transparent:true, opacity:0.55})));
+
+  // Fireflies (green glowing dots)
+  const ffCount = 60;
+  const ffGeo = new THREE.BufferGeometry();
+  const ffPos = new Float32Array(ffCount*3);
+  const ffVel = [];
+  for(let i=0;i<ffCount;i++){
+    ffPos[i*3]=(Math.random()-0.5)*80;
+    ffPos[i*3+1]=(Math.random()-0.5)*60;
+    ffPos[i*3+2]=(Math.random()-0.5)*30;
+    ffVel.push({x:(Math.random()-0.5)*0.015,y:(Math.random()-0.5)*0.02,z:0});
+  }
+  ffGeo.setAttribute('position', new THREE.BufferAttribute(ffPos,3));
+  const fireflies = new THREE.Points(ffGeo, new THREE.PointsMaterial({color:0x7fb896, size:0.45, transparent:true, opacity:0.7}));
+  scene.add(fireflies);
+
+  window.addEventListener('resize',()=>{
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+  });
+
+  let t=0;
+  (function animBg(){
+    requestAnimationFrame(animBg);
+    t+=0.008;
+    const p=ffGeo.attributes.position.array;
+    for(let i=0;i<ffCount;i++){
+      p[i*3]+=ffVel[i].x+Math.sin(t+i)*0.003;
+      p[i*3+1]+=ffVel[i].y+Math.cos(t*0.7+i)*0.003;
+      if(p[i*3]>40) p[i*3]=-40;
+      if(p[i*3]<-40) p[i*3]=40;
+      if(p[i*3+1]>30) p[i*3+1]=-30;
+      if(p[i*3+1]<-30) p[i*3+1]=30;
+    }
+    ffGeo.attributes.position.needsUpdate=true;
+    renderer.render(scene, camera);
+  })();
+})();
+
+
+// ═══════════════════════════════════════════════════
+//  THREE.JS SCENE 2 — HERO 3D LOGIC LAND ISLAND
+//  Full interactive scene: island + puzzle pieces
+//  that follow cursor pointer
+// ═══════════════════════════════════════════════════
+(function(){
+  const heroSection = document.getElementById('hero');
+  const canvas = document.getElementById('hero-canvas');
+  canvas.style.pointerEvents = 'none';
+
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  function resize(){
+    const w = heroSection.offsetWidth, h = heroSection.offsetHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+  }
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x0c1f14, 0.028);
+
+  const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 200);
+  camera.position.set(0, 6, 22);
+  camera.lookAt(0, 0, 0);
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── Lights ──
+  scene.add(new THREE.AmbientLight(0x1a3a2a, 0.9));
+  const sunLight = new THREE.DirectionalLight(0xf5c842, 2.2);
+  sunLight.position.set(8, 18, 12);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.set(1024,1024);
+  scene.add(sunLight);
+  const fillLight = new THREE.DirectionalLight(0x5bbdd4, 0.8);
+  fillLight.position.set(-12, 4, -6); scene.add(fillLight);
+  const rimLight = new THREE.PointLight(0xe8a030, 2.5, 36);
+  rimLight.position.set(4, 10, -6); scene.add(rimLight);
+  const groundLight = new THREE.PointLight(0x7fb896, 1.2, 20);
+  groundLight.position.set(0, -4, 0); scene.add(groundLight);
+
+  // ── MAIN ISLAND GROUP ──
+  const islandGroup = new THREE.Group();
+  scene.add(islandGroup);
+
+  // Base terrain — rounded cylinder
+  const terrainMat = new THREE.MeshPhongMaterial({color:0x2d5a3d, shininess:8});
+  const dirtMat = new THREE.MeshPhongMaterial({color:0x7a5230, shininess:4});
+  const rockMat = new THREE.MeshPhongMaterial({color:0x6b7a6b, shininess:12});
+
+  // Main island body
+  const islandBase = new THREE.Mesh(new THREE.CylinderGeometry(5.5,4,2.8,10), terrainMat);
+  islandBase.receiveShadow = true;
+  islandGroup.add(islandBase);
+
+  // Dirt underside
+  const dirtBase = new THREE.Mesh(new THREE.CylinderGeometry(5.2,3.6,2.4,10), dirtMat);
+  dirtBase.position.y = -2.3;
+  islandGroup.add(dirtBase);
+
+  // Rocky bottom
+  const rockBase = new THREE.Mesh(new THREE.CylinderGeometry(4.4,3,1.2,10), rockMat);
+  rockBase.position.y = -3.7;
+  islandGroup.add(rockBase);
+
+  // Small bumps/hills on top
+  const hillMat = new THREE.MeshPhongMaterial({color:0x3d7a52, shininess:6});
+  [[1.5,0.4,1],[-1.2,0.3,1.8],[2.2,0.3,-1],[-0.5,0.5,-2],[0.2,0.6,0.5]].forEach(([x,y,z])=>{
+    const h = new THREE.Mesh(new THREE.SphereGeometry(0.9+Math.random()*0.5,7,6), hillMat);
+    h.scale.y = 0.55;
+    h.position.set(x,y+0.5,z);
+    h.castShadow = true;
+    islandGroup.add(h);
+  });
+
+  // Trees
+  const trunkMat = new THREE.MeshPhongMaterial({color:0x5c3a1e});
+  const leafColors = [0x2d6b42, 0x3a8050, 0x4a9460, 0x256040, 0x1e5035];
+  [
+    [1.8,1.1,0.8],[-1.6,0.8,2],[3,0.7,-1.2],[-2.2,0.9,-1.5],[0.3,1.2,-2.8],[-3,0.6,0.5],[2.5,0.7,2]
+  ].forEach(([x,y,z],i)=>{
+    const h = 1.0+Math.random()*0.9;
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.18,h,6), trunkMat);
+    trunk.position.set(x, y+h/2, z);
+    trunk.castShadow=true;
+    islandGroup.add(trunk);
+    // foliage — layered cones for cartoony look
+    const leafMat = new THREE.MeshPhongMaterial({color:leafColors[i%leafColors.length], shininess:4});
+    const leafMat2 = new THREE.MeshPhongMaterial({color:leafColors[(i+2)%leafColors.length]});
+    const cone1 = new THREE.Mesh(new THREE.ConeGeometry(0.85+Math.random()*0.3, 1.4, 7), leafMat);
+    cone1.position.set(x, y+h+0.5, z); cone1.castShadow=true; islandGroup.add(cone1);
+    const cone2 = new THREE.Mesh(new THREE.ConeGeometry(0.65, 1.1, 7), leafMat2);
+    cone2.position.set(x, y+h+1.2, z); cone2.castShadow=true; islandGroup.add(cone2);
+  });
+
+  // Rocks on island
+  const rockSmMat = new THREE.MeshPhongMaterial({color:0x8a9a8a, shininess:20});
+  [[3.8,0.3,0.5],[-3.5,0.2,1],[2,0.2,3],[-2.8,0.3,-2]].forEach(([x,y,z])=>{
+    const r = new THREE.Mesh(new THREE.SphereGeometry(0.25+Math.random()*0.2,6,5), rockSmMat);
+    r.scale.set(1, 0.6+Math.random()*0.3, 1);
+    r.position.set(x, y, z); r.castShadow=true;
+    islandGroup.add(r);
+  });
+
+  // Water ring
+  const waterGeo = new THREE.RingGeometry(5.6, 8.5, 48);
+  const waterMat = new THREE.MeshPhongMaterial({
+    color:0x1a6b8a, transparent:true, opacity:0.55, shininess:80, side:THREE.DoubleSide
+  });
+  const water = new THREE.Mesh(waterGeo, waterMat);
+  water.rotation.x = -Math.PI/2; water.position.y = -1.2;
+  scene.add(water);
+
+  // Water ripple rings
+  [0, 0.4, 0.8].forEach((off,i)=>{
+    const rg = new THREE.RingGeometry(6+i*0.8, 6.1+i*0.8, 40);
+    const rm = new THREE.MeshBasicMaterial({color:0x5bbdd4, transparent:true, opacity:0.15-i*0.04});
+    const ring = new THREE.Mesh(rg, rm);
+    ring.rotation.x=-Math.PI/2; ring.position.y=-1.18;
+    ring.userData = {phase:off};
+    scene.add(ring);
+  });
+
+  // ── FLOATING PUZZLE PIECES around island ──
+  // These orbit and follow cursor
+  const puzzleGroup = new THREE.Group();
+  scene.add(puzzleGroup);
+
+  const puzzleColors = [0xe8a030,0x4a8c5c,0x2a90a8,0x7b6fa0,0xc4603a,0x5bbdd4];
+  const puzzlePieces = [];
+
+  // Create 6 floating 3D puzzle-like objects
+  const puzzleGeos = [
+    new THREE.BoxGeometry(1,0.25,1),            // flat square tile
+    new THREE.CylinderGeometry(0.5,0.5,0.25,6), // hexagon tile
+    new THREE.OctahedronGeometry(0.55, 0),      // gem/crystal
+    new THREE.BoxGeometry(1.2,0.2,0.6),          // rect tile
+    new THREE.CylinderGeometry(0.45,0.6,0.3,5), // pentagon tile
+    new THREE.BoxGeometry(0.7,0.7,0.7),          // cube
+  ];
+
+  const orbitRadii = [6.5, 7.8, 6.2, 8.4, 7.1, 8.9];
+  const orbitSpeeds = [0.28, -0.22, 0.35, -0.18, 0.25, -0.3];
+  const orbitOffsets = [0, 1.1, 2.1, 3.2, 4.2, 5.3];
+  const orbitHeights = [2.5, 1.8, 3.2, 2.0, 1.5, 2.8];
+
+  puzzleGeos.forEach((geo, i) => {
+    const mat = new THREE.MeshPhongMaterial({
+      color: puzzleColors[i],
+      shininess: 60,
+      emissive: puzzleColors[i],
+      emissiveIntensity: 0.12,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.castShadow = true;
+    mesh.userData = {
+      orbitR: orbitRadii[i],
+      orbitSpeed: orbitSpeeds[i],
+      orbitOffset: orbitOffsets[i],
+      baseH: orbitHeights[i],
+      rotX: (Math.random()-0.5)*0.02,
+      rotY: (Math.random()-0.5)*0.03,
+      rotZ: (Math.random()-0.5)*0.015,
+      cursorInfluence: 0,
+      idx: i,
+    };
+
+    // Glow outline
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: puzzleColors[i], transparent:true, opacity:0.15, side:THREE.BackSide
+    });
+    const glowMesh = new THREE.Mesh(geo, glowMat);
+    glowMesh.scale.setScalar(1.22);
+    mesh.add(glowMesh);
+
+    puzzleGroup.add(mesh);
+    puzzlePieces.push(mesh);
+  });
+
+  // Connecting dashed lines between puzzle pieces (energy beams)
+  const beamMat = new THREE.LineBasicMaterial({color:0x7fb896, transparent:true, opacity:0.12});
+  const beams = [];
+  [[0,2],[1,3],[2,4],[3,5],[4,0],[5,1]].forEach(([a,b])=>{
+    const lineGeo = new THREE.BufferGeometry();
+    lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+    const line = new THREE.Line(lineGeo, beamMat);
+    scene.add(line);
+    beams.push({line, a, b});
+  });
+
+  // Floating sparkles around island
+  const sparkleGroup = new THREE.Group();
+  scene.add(sparkleGroup);
+  const sparkleCount = 30;
+  const sparkles = [];
+  for(let i=0;i<sparkleCount;i++){
+    const sGeo = new THREE.OctahedronGeometry(0.06+Math.random()*0.08, 0);
+    const sMat = new THREE.MeshBasicMaterial({
+      color:[0xf5c842, 0x7fb896, 0x5bbdd4, 0xfdf6e3][i%4],
+      transparent:true, opacity:0.8
+    });
+    const s = new THREE.Mesh(sGeo, sMat);
+    const ang = Math.random()*Math.PI*2;
+    const r = 4+Math.random()*6;
+    s.position.set(Math.cos(ang)*r, (Math.random()-0.5)*6, Math.sin(ang)*r);
+    s.userData = {
+      ang, r, speed: 0.2+Math.random()*0.5,
+      bobSpeed: 0.4+Math.random()*0.8,
+      bobAmp: 0.3+Math.random()*0.8,
+      baseY: s.position.y,
+      phase: Math.random()*Math.PI*2,
+    };
+    sparkleGroup.add(s);
+    sparkles.push(s);
+  }
+
+  // Mini floating islands in background
+  const miniIslands = [];
+  [
+    {x:-11,y:-4,z:-8,s:0.38,c:0x1a3a2a},
+    {x:12,y:-3,z:-10,s:0.32,c:0x2d5a3d},
+    {x:10,y:-5,z:3,s:0.28,c:0x1a6b6b},
+    {x:-10,y:-4.5,z:2,s:0.35,c:0x2d5a3d},
+  ].forEach(d=>{
+    const g = new THREE.Group();
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(d.s*4,d.s*3,d.s*2,8),
+      new THREE.MeshPhongMaterial({color:d.c}));
+    g.add(m);
+    const top = new THREE.Mesh(new THREE.SphereGeometry(d.s*1.2,7,6),
+      new THREE.MeshPhongMaterial({color:0x3d7a52}));
+    top.position.y=d.s*1.2; g.add(top);
+    g.position.set(d.x,d.y,d.z);
+    scene.add(g);
+    miniIslands.push({g, baseY:d.y, speed:0.2+Math.random()*0.2, phase:Math.random()*Math.PI*2});
+  });
+
+  // ── MOUSE TRACKING ──
+  let mouseX=0, mouseY=0, targetX=0, targetY=0;
+  let scrollY=0;
+
+  // Track mouse relative to hero section
+  heroSection.addEventListener('mousemove', e=>{
+    const rect = heroSection.getBoundingClientRect();
+    mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+    mouseY = -((e.clientY - rect.top) / rect.height - 0.5) * 2;
+  });
+  document.addEventListener('mousemove', e=>{
+    mouseX = (e.clientX/window.innerWidth - 0.5)*2;
+    mouseY = -(e.clientY/window.innerHeight - 0.5)*2;
+  });
+  window.addEventListener('scroll', ()=>{ scrollY = window.scrollY; });
+
+  // ── ANIMATE ──
+  let t=0;
+  function animHero(){
+    requestAnimationFrame(animHero);
+    t += 0.01;
+
+    // Smooth cursor follow
+    targetX += (mouseX - targetX) * 0.06;
+    targetY += (mouseY - targetY) * 0.06;
+
+    // Island gentle bob + cursor tilt
+    islandGroup.position.y = Math.sin(t*0.5)*0.25;
+    islandGroup.rotation.y = t * 0.04 + targetX * 0.15;
+    islandGroup.rotation.z = targetY * 0.05;
+    islandGroup.rotation.x = -targetY * 0.04;
+
+    // Camera parallax following cursor
+    camera.position.x += (targetX * 3 - camera.position.x) * 0.04;
+    camera.position.y += (targetY * 1.5 + 6 - camera.position.y) * 0.04;
+    camera.position.z = 22 + scrollY * 0.004;
+    camera.lookAt(0, islandGroup.position.y * 0.5, 0);
+
+    // Puzzle pieces orbit + cursor follow
+    puzzlePieces.forEach((p, i)=>{
+      const d = p.userData;
+      const angle = t * d.orbitSpeed + d.orbitOffset;
+
+      // Base orbit position
+      const baseX = Math.cos(angle) * d.orbitR;
+      const baseZ = Math.sin(angle) * d.orbitR;
+      const baseY = d.baseH + Math.sin(t * 0.4 + d.orbitOffset) * 0.8;
+
+      // Cursor influence — puzzle pieces lean toward cursor
+      const influenceX = targetX * 1.5;
+      const influenceY = targetY * 1.0;
+
+      p.position.x += (baseX + influenceX * 0.5 - p.position.x) * 0.04;
+      p.position.z += (baseZ - p.position.z) * 0.04;
+      p.position.y += (baseY + influenceY * 0.4 - p.position.y) * 0.04;
+
+      // Self rotation
+      p.rotation.x += d.rotX;
+      p.rotation.y += d.rotY;
+      p.rotation.z += d.rotZ;
+
+      // Pulse scale with cursor proximity
+      const dist = Math.sqrt(targetX*targetX + targetY*targetY);
+      const pulse = 1 + Math.sin(t*2+i)*0.04;
+      p.scale.setScalar(pulse);
+    });
+
+    // Update energy beams between puzzle pieces
+    beams.forEach(({line, a, b})=>{
+      const pa = puzzlePieces[a].position;
+      const pb = puzzlePieces[b].position;
+      const pos = line.geometry.attributes.position.array;
+      pos[0]=pa.x; pos[1]=pa.y; pos[2]=pa.z;
+      pos[3]=pb.x; pos[4]=pb.y; pos[5]=pb.z;
+      line.geometry.attributes.position.needsUpdate=true;
+    });
+
+    // Sparkles orbit
+    sparkles.forEach((s,i)=>{
+      const d = s.userData;
+      d.ang += d.speed * 0.008;
+      s.position.x = Math.cos(d.ang) * d.r + targetX * 0.3;
+      s.position.z = Math.sin(d.ang) * d.r;
+      s.position.y = d.baseY + Math.sin(t * d.bobSpeed + d.phase) * d.bobAmp;
+      s.rotation.y += 0.04;
+      s.material.opacity = 0.4 + Math.sin(t * d.bobSpeed + d.phase) * 0.4;
+    });
+
+    // Mini islands bob
+    miniIslands.forEach(mi=>{
+      mi.g.position.y = mi.baseY + Math.sin(t * mi.speed + mi.phase) * 0.4;
+      mi.g.rotation.y = t * 0.03;
+    });
+
+    // Lights pulse gently
+    rimLight.intensity = 2.5 + Math.sin(t*0.8)*0.6;
+    groundLight.intensity = 1.2 + Math.sin(t*0.6+1)*0.4;
+
+    renderer.render(scene, camera);
+  }
+  animHero();
+})();
+
+
+// ═══════════════════════════════════════════════════
+//  CUSTOM CURSOR
+// ═══════════════════════════════════════════════════
+const cur = document.getElementById('cur');
+const trail = document.getElementById('cur-trail');
+let cx=0,cy=0,tx=0,ty=0;
+
+document.addEventListener('mousemove', e=>{
+  cx=e.clientX; cy=e.clientY;
+  gsap.to(cur,{left:cx,top:cy,duration:.06});
+});
+function tickTrail(){
+  tx+=(cx-tx)*0.1; ty+=(cy-ty)*0.1;
+  trail.style.left=tx+'px'; trail.style.top=ty+'px';
+  requestAnimationFrame(tickTrail);
+}
+tickTrail();
+
+document.querySelectorAll('a,button,.puz,.fc,.pc,.blk').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cur.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>cur.classList.remove('hov'));
+});
+
+
+// ═══════════════════════════════════════════════════
+//  GSAP + SCROLLTRIGGER
+// ═══════════════════════════════════════════════════
+gsap.registerPlugin(ScrollTrigger);
+
+gsap.to('#prog',{width:'100%',ease:'none',scrollTrigger:{trigger:'body',start:'top top',end:'bottom bottom',scrub:.35}});
+ScrollTrigger.create({start:'top -60',onUpdate:s=>document.getElementById('main-nav').classList.toggle('scrolled',s.scroll()>60)});
+
+// Hero
+const heroTl = gsap.timeline({defaults:{ease:'power3.out'}});
+heroTl
+  .to('.hero-eyebrow',{opacity:1,y:0,duration:.9},.5)
+  .to('.hero-h1',{opacity:1,y:0,duration:1.0},.7)
+  .to('.hero-p',{opacity:1,y:0,duration:.9},.9)
+  .to('.hero-ctas',{opacity:1,y:0,duration:.8},1.05)
+  .to('.hero-stats',{opacity:1,y:0,duration:.8},1.2);
+
+gsap.to('.hero-h1 .underlined::after',{scaleX:1,duration:1,ease:'power2.out',delay:1.5});
+
+// Counters
+document.querySelectorAll('[data-count]').forEach(el=>{
+  const target=+el.dataset.count;
+  const suffix = target>=10000?'+':target>=100?'+':'%';
+  gsap.fromTo({v:0},{v:target},{
+    v:target,duration:2.4,ease:'power2.out',delay:1.5,
+    onUpdate:function(){ el.textContent=Math.floor(this.targets()[0].v).toLocaleString()+suffix; }
+  });
+});
+
+// Horizontal scroll how-it-works
+const slider = document.getElementById('howSlider');
+gsap.to(slider,{
+  x:()=>-(slider.scrollWidth - window.innerWidth),
+  ease:'none',
+  scrollTrigger:{
+    trigger:'#how-wrap',start:'top top',end:'bottom bottom',
+    scrub:1,pin:'#how-pin',anticipatePin:1,
+  }
+});
+
+gsap.utils.toArray('.hcard-inner').forEach((c,i)=>{
+  gsap.from(c,{opacity:0,y:28,scale:.96,
+    scrollTrigger:{trigger:'#how-wrap',start:`${18+i*18}% top`,end:`${32+i*18}% top`,scrub:1}
+  });
+});
+
+// Features
+ScrollTrigger.create({
+  trigger:'#features',start:'top 75%',
+  onEnter:()=>{
+    gsap.to('#features .s-label',{opacity:1,x:0,duration:.65,ease:'power2.out'});
+    gsap.to('#features .s-title',{opacity:1,y:0,duration:.75,ease:'power2.out',delay:.1});
+    gsap.to(['.fc'],{opacity:1,y:0,scale:1,duration:.7,ease:'back.out(1.4)',stagger:.09,delay:.2});
+    // skill bar reveal
+    setTimeout(()=>{
+      ['#skf1','#skf2','#skf3','#skf4'].forEach((id,i)=>{
+        gsap.from(id,{scaleX:0,transformOrigin:'left',duration:1.3,ease:'power2.out',delay:.3+i*.1});
+      });
+    },350);
+  }
+});
+
+// 3D card tilt
+document.querySelectorAll('.fc,.pc').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    gsap.to(card,{rotationY:x*12,rotationX:-y*10,transformPerspective:900,duration:.3,ease:'power1.out'});
+  });
+  card.addEventListener('mouseleave',()=>gsap.to(card,{rotationY:0,rotationX:0,duration:.65,ease:'elastic.out(1,.5)'}));
+});
+
+// Demo
+ScrollTrigger.create({
+  trigger:'#demo',start:'top 80%',
+  onEnter:()=>{
+    gsap.to('#demo .s-label',{opacity:1,x:0,duration:.6});
+    gsap.to('#demo .s-title',{opacity:1,y:0,duration:.7,delay:.1});
+    gsap.from('.demo-panel',{opacity:0,x:-36,duration:.8,ease:'power3.out',delay:.2});
+    gsap.from('.viz-panel',{opacity:0,x:36,duration:.8,ease:'power3.out',delay:.3});
+  }
+});
+
+// ═══════════════════════════════════════════════════
+//  PUZZLE SHOWCASE — FULL INTERACTIVE SYSTEM
+// ═══════════════════════════════════════════════════
+
+// Code content for each puzzle card (with HTML spans for syntax highlighting)
+const puzzleData = [
+  {
+    id:'pz1', codeId:'pc1-code', fillId:'pzf1', starsId:'ps1', bstId:'bst1',
+    fillPct:'82%', starsFull:'★★★', starsBack:'★★★',
+    lines:[
+      '<span class="ck">for</span> i <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">5</span>):',
+      '&nbsp;&nbsp;<span class="cf">move_right</span>()',
+      '&nbsp;&nbsp;<span class="cf">collect</span>()',
+      '<span class="cc">→ 5 coins ✓</span>'
+    ]
+  },
+  {
+    id:'pz2', codeId:'pc2-code', fillId:'pzf2', starsId:'ps2', bstId:'bst2',
+    fillPct:'65%', starsFull:'★★☆', starsBack:'★★☆',
+    lines:[
+      '<span class="ck">if</span> <span class="cf">door.is_open</span>():',
+      '&nbsp;&nbsp;<span class="cf">enter_room</span>()',
+      '<span class="ck">else</span>:',
+      '&nbsp;&nbsp;<span class="cf">find_key</span>()'
+    ]
+  },
+  {
+    id:'pz3', codeId:'pc3-code', fillId:'pzf3', starsId:'ps3', bstId:'bst3',
+    fillPct:'91%', starsFull:'★★★', starsBack:'★☆☆',
+    lines:[
+      '<span class="ck">def</span> <span class="cf">cast_fireball</span>():',
+      '&nbsp;&nbsp;<span class="cf">charge</span>(<span class="cn">3</span>)',
+      '&nbsp;&nbsp;<span class="cf">aim</span>(<span class="cs">"enemy"</span>)',
+      '&nbsp;&nbsp;<span class="cf">launch</span>()'
+    ]
+  },
+  {
+    id:'pz4', codeId:'pc4-code', fillId:'pzf4', starsId:'ps4', bstId:'bst4',
+    fillPct:'78%', starsFull:'★★★', starsBack:'★★★',
+    lines:[
+      '<span class="ck">score</span> <span class="co">=</span> <span class="cn">0</span>',
+      '<span class="ck">name</span> <span class="co">=</span> <span class="cs">"Luna"</span>',
+      '<span class="ck">score</span> <span class="co">+=</span> <span class="cn">10</span>',
+      '<span class="cc">→ score = 10 ✓</span>'
+    ]
+  },
+  {
+    id:'pz5', codeId:'pc5-code', fillId:'pzf5', starsId:'ps5', bstId:'bst5',
+    fillPct:'55%', starsFull:'★★☆', starsBack:'★★☆',
+    lines:[
+      '<span class="ck">bag</span> <span class="co">=</span> [<span class="cs">"sword"</span>, <span class="cs">"map"</span>]',
+      '<span class="ck">bag</span>.<span class="cf">append</span>(<span class="cs">"key"</span>)',
+      '<span class="cf">print</span>(<span class="ck">bag</span>[<span class="cn">2</span>])',
+      '<span class="cc">→ "key" ✓</span>'
+    ]
+  },
+  {
+    id:'pz6', codeId:'pc6-code', fillId:'pzf6', starsId:'ps6', bstId:'bst6',
+    fillPct:'88%', starsFull:'★★★', starsBack:'★★★',
+    lines:[
+      '<span class="ck">gems</span> <span class="co">=</span> [<span class="cn">4</span>,<span class="cn">1</span>,<span class="cn">3</span>,<span class="cn">2</span>]',
+      '<span class="ck">gems</span>.<span class="cf">sort</span>()',
+      '<span class="cf">print</span>(<span class="ck">gems</span>)',
+      '<span class="cc">→ [1,2,3,4] ✓</span>'
+    ]
+  }
+];
+
+// Typewriter animation for a code block
+function typewriteCode(containerEl, lines, onDone) {
+  containerEl.innerHTML = '';
+  let lineIdx = 0;
+  let charIdx = 0;
+  const plainLines = lines.map(l => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = l;
+    return tmp.textContent;
+  });
+
+  // Build a div per line
+  const lineDivs = lines.map((html, i) => {
+    const d = document.createElement('div');
+    d.style.cssText = 'min-height:1.6em;opacity:0';
+    containerEl.appendChild(d);
+    return { el: d, html, plain: plainLines[i] };
+  });
+
+  function typeNextLine() {
+    if (lineIdx >= lineDivs.length) {
+      if (onDone) onDone();
+      return;
+    }
+    const { el, html, plain } = lineDivs[lineIdx];
+    el.style.opacity = '1';
+    charIdx = 0;
+
+    function typeChar() {
+      charIdx++;
+      // Show partial plain text + blink cursor; inject full HTML at end
+      if (charIdx < plain.length) {
+        el.innerHTML = plain.substring(0, charIdx) + '<span class="code-cursor"></span>';
+        setTimeout(typeChar, 28 + Math.random() * 22);
+      } else {
+        el.innerHTML = html; // full syntax-highlighted line
+        lineIdx++;
+        setTimeout(typeNextLine, 120);
+      }
+    }
+    typeChar();
+  }
+  typeNextLine();
+}
+
+// Ripple on click
+function spawnRipple(card, e) {
+  const r = card.getBoundingClientRect();
+  const ripple = document.createElement('div');
+  ripple.className = 'puz-ripple';
+  ripple.style.left = (e.clientX - r.left - 10) + 'px';
+  ripple.style.top  = (e.clientY - r.top  - 10) + 'px';
+  card.querySelector('.puz-front').appendChild(ripple);
+  setTimeout(() => ripple.remove(), 750);
+}
+
+// Floating mini-particles on card
+function addCardParticles(card) {
+  const colors = ['#f5c842','#7fb896','#5bbdd4','#e8a030'];
+  for (let i = 0; i < 4; i++) {
+    const p = document.createElement('div');
+    p.className = 'puz-particle';
+    p.style.cssText = `
+      width:${5+Math.random()*5}px;
+      height:${5+Math.random()*5}px;
+      background:${colors[i % colors.length]};
+      left:${10+Math.random()*80}%;
+      top:${10+Math.random()*80}%;
+      animation-delay:${Math.random()*2}s;
+      animation-duration:${2.5+Math.random()*2}s;
+      opacity:.5;
+    `;
+    card.querySelector('.puz-front').appendChild(p);
+  }
+}
+
+// Star fill animation
+function animateStars(starsEl, starsBack, starsFull) {
+  const filledStars = (starsFull.match(/★/g)||[]).length;
+  let shown = 0;
+  starsEl.textContent = '☆☆☆';
+  const backEl = document.getElementById(starsBack);
+  if(backEl) backEl.style.opacity = '0';
+  const iv = setInterval(() => {
+    shown++;
+    starsEl.textContent = '★'.repeat(shown) + '☆'.repeat(3 - shown);
+    gsap.fromTo(starsEl, {scale:1.5,color:'#fff'}, {scale:1,color:'#f5c842',duration:.3,ease:'back.out(2)'});
+    if (shown >= filledStars) {
+      clearInterval(iv);
+      if(backEl){ backEl.textContent = starsFull; backEl.style.opacity='1'; }
+    }
+  }, 280);
+}
+
+// Init each puzzle card
+puzzleData.forEach((pd, idx) => {
+  const card = document.getElementById(pd.id);
+  const codeEl = document.getElementById(pd.codeId);
+  const starsEl = document.getElementById(pd.starsId);
+  if (!card || !codeEl) return;
+
+  addCardParticles(card);
+
+  let typed = false;
+  let flipped = false;
+
+  // Hover: start typewriter if not yet done
+  card.addEventListener('mouseenter', () => {
+    if (!typed) {
+      typed = true;
+      typewriteCode(codeEl, pd.lines, null);
+    }
+    if (!flipped) {
+      gsap.to(card.querySelector('.puz-inner'), {
+        rotateY: 8, rotateX: -4,
+        transformPerspective: 900, duration: .35, ease: 'power2.out'
+      });
+    }
+  });
+
+  card.addEventListener('mousemove', e => {
+    if (flipped) return;
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - .5;
+    const y = (e.clientY - r.top)  / r.height - .5;
+    gsap.to(card.querySelector('.puz-inner'), {
+      rotateY: x * 20, rotateX: -y * 14,
+      transformPerspective: 900, duration: .3, ease: 'power1.out'
+    });
+  });
+
+  card.addEventListener('mouseleave', () => {
+    if (flipped) return;
+    gsap.to(card.querySelector('.puz-inner'), {
+      rotateY: 0, rotateX: 0, duration: .7, ease: 'elastic.out(1,.45)'
+    });
+  });
+
+  // Click: progress bar → star fill → flip to back → burst
+  card.addEventListener('click', e => {
+    if (flipped) {
+      // Flip back
+      flipped = false;
+      card.classList.remove('flipped');
+      gsap.to(card.querySelector('.puz-inner'), {rotateY:0,rotateX:0,duration:.7,ease:'elastic.out(1,.45)'});
+      return;
+    }
+
+    spawnRipple(card, e);
+
+    // Step 1: progress bar fills
+    const fill = document.getElementById(pd.fillId);
+    gsap.fromTo(fill,
+      { width: '0%' },
+      { width: pd.fillPct, duration: 1.0, ease: 'power2.out',
+        onComplete: () => {
+          // Step 2: star animation
+          animateStars(starsEl, pd.bstId, pd.starsFull);
+
+          // Step 3: screen flash + flip after short delay
+          gsap.to(card, {
+            boxShadow: '0 0 0 3px rgba(127,184,150,.8), 0 0 60px rgba(127,184,150,.4)',
+            duration: .2, yoyo: true, repeat: 1,
+            onComplete: () => {
+              gsap.to(card, { boxShadow: 'none', duration: .4 });
+            }
+          });
+
+          setTimeout(() => {
+            flipped = true;
+            card.classList.add('flipped');
+            burst(card);
+          }, 700);
+        }
+      }
+    );
+
+    // Typewrite if not done yet
+    if (!typed) { typed = true; typewriteCode(codeEl, pd.lines, null); }
+  });
+});
+
+// Showcase scroll entrance
+ScrollTrigger.create({
+  trigger: '#showcase', start: 'top 75%',
+  onEnter: () => {
+    gsap.to('#showcase .s-label', { opacity:1, x:0, duration:.6 });
+    gsap.to('#showcase .s-title', { opacity:1, y:0, duration:.7, delay:.1 });
+    // Cards stagger in with bounce
+    gsap.to('.puz', {
+      opacity: 1, y: 0, duration: .75,
+      ease: 'back.out(1.8)', stagger: { each: .12, from: 'start' }, delay: .2,
+      onComplete: () => {
+        // After cards arrive, type first card's code automatically
+        const first = puzzleData[0];
+        const firstCode = document.getElementById(first.codeId);
+        if (firstCode && firstCode.innerHTML === '') {
+          typewriteCode(firstCode, first.lines, null);
+        }
+      }
+    });
+  }
+});
+
+// Testimonials
+ScrollTrigger.create({trigger:'#testi',start:'top 80%',onEnter:()=>{
+  gsap.to('#testi .s-label',{opacity:1,x:0,duration:.6});
+  gsap.to('#testi .s-title',{opacity:1,y:0,duration:.7,delay:.1});
+}});
+
+// Pricing
+ScrollTrigger.create({trigger:'#pricing',start:'top 75%',onEnter:()=>{
+  gsap.to('#pricing .s-label',{opacity:1,x:0,duration:.6});
+  gsap.to('#pricing .s-title',{opacity:1,y:0,duration:.7,delay:.1});
+  gsap.to(['#pr1','#pr2','#pr3'],{opacity:1,y:0,duration:.75,ease:'back.out(1.5)',stagger:.12,delay:.25});
+}});
+
+// Final CTA
+ScrollTrigger.create({trigger:'#final-cta',start:'top 75%',onEnter:()=>{
+  gsap.to('.fcta-pre',{opacity:1,y:0,duration:.8,ease:'power3.out'});
+  gsap.to('.fcta-h2',{opacity:1,y:0,duration:.9,ease:'power3.out',delay:.15});
+  gsap.to('.fcta-p',{opacity:1,y:0,duration:.8,ease:'power3.out',delay:.28});
+  gsap.to('.fcta-btns',{opacity:1,y:0,duration:.8,ease:'power3.out',delay:.4});
+}});
+
+// Generic label/title reveals
+gsap.utils.toArray('.s-label').forEach(el=>{
+  ScrollTrigger.create({trigger:el,start:'top 90%',onEnter:()=>gsap.to(el,{opacity:1,x:0,duration:.7,ease:'power2.out'})});
+});
+gsap.utils.toArray('.s-title').forEach(el=>{
+  ScrollTrigger.create({trigger:el,start:'top 88%',onEnter:()=>gsap.to(el,{opacity:1,y:0,duration:.75,ease:'power2.out',delay:.1})});
+});
+
+// Magnetic buttons
+document.querySelectorAll('.btn-a,.nav-cta').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect();
+    gsap.to(btn,{x:(e.clientX-r.left-r.width/2)*.35,y:(e.clientY-r.top-r.height/2)*.35,duration:.4,ease:'power2.out'});
+  });
+  btn.addEventListener('mouseleave',()=>gsap.to(btn,{x:0,y:0,duration:.5,ease:'elastic.out(1,.5)'}));
+});
+
+
+// ═══════════════════════════════════════════════════
+//  PARTICLE BURST
+// ═══════════════════════════════════════════════════
+function burst(el){
+  const r=el.getBoundingClientRect();
+  const ox=r.left+r.width/2, oy=r.top+r.height/2;
+  const clrs=['#f5c842','#7fb896','#5bbdd4','#e8a030','#fdf6e3','#c4603a'];
+  for(let i=0;i<20;i++){
+    const p=document.createElement('div');
+    p.className='burst-p';
+    p.style.cssText=`left:${ox}px;top:${oy}px;background:${clrs[i%clrs.length]};`;
+    document.body.appendChild(p);
+    const ang=(i/20)*Math.PI*2;
+    const d=55+Math.random()*95;
+    gsap.to(p,{x:Math.cos(ang)*d,y:Math.sin(ang)*d,opacity:0,scale:0,duration:.75+Math.random()*.4,ease:'power2.out',onComplete:()=>p.remove()});
+  }
+}
+
+
+// ═══════════════════════════════════════════════════
+//  DRAG & DROP PUZZLE
+// ═══════════════════════════════════════════════════
+let dragged=null;
+const lineState=[null,null,null,null];
+const correct=['for i in range(5):','    move_right()','    collect_coin()',"print('Done!')"];
+
+document.querySelectorAll('.blk').forEach(b=>{
+  b.addEventListener('dragstart',()=>{ dragged=b; b.classList.add('dragging'); });
+  b.addEventListener('dragend',()=>b.classList.remove('dragging'));
+  b.addEventListener('touchstart',()=>{ dragged=b; gsap.to(b,{scale:1.1,duration:.15}); },{passive:true});
+  b.addEventListener('touchend',e=>{
+    gsap.to(b,{scale:1,duration:.15});
+    const t=e.changedTouches[0];
+    const target=document.elementFromPoint(t.clientX,t.clientY);
+    const line=target?.closest('.dline');
+    if(line && dragged) placeDrop(line);
+    dragged=null;
+  });
+});
+
+document.querySelectorAll('.dline').forEach(line=>{
+  line.addEventListener('dragover',e=>{ e.preventDefault(); document.getElementById('dz').classList.add('over'); });
+  line.addEventListener('dragleave',()=>document.getElementById('dz').classList.remove('over'));
+  line.addEventListener('drop',e=>{ e.preventDefault(); document.getElementById('dz').classList.remove('over'); if(dragged) placeDrop(line); });
+  line.addEventListener('click',()=>{
+    const i=+line.dataset.i;
+    if(lineState[i]!==null){
+      document.querySelectorAll('.blk').forEach(b=>{ if(b.dataset.code===lineState[i]) b.classList.remove('used'); });
+      lineState[i]=null; line.classList.remove('ok');
+      line.innerHTML='<span style="color:var(--muted2)">line '+(i+1)+' — drop here</span>';
+    }
+  });
+});
+
+function placeDrop(line){
+  const i=+line.dataset.i, code=dragged.dataset.code;
+  lineState[i]=code; line.classList.add('ok');
+  const isKw=dragged.classList.contains('kw');
+  line.innerHTML=`<span class="${isKw?'dk':'df'}">${code}</span>`;
+  gsap.from(line,{x:-8,opacity:0,duration:.3,ease:'power2.out'});
+  dragged.classList.add('used');
+}
+
+document.getElementById('runBtn').addEventListener('click',()=>{
+  const ok=lineState[0]===correct[0]&&lineState[1]===correct[1]&&lineState[2]===correct[2]&&lineState[3]===correct[3];
+  const panel=document.getElementById('outPanel');
+  panel.classList.add('show'); panel.innerHTML='';
+  if(ok){
+    [
+      {t:'> Executing program...',c:'var(--muted2)'},
+      {t:'> Loop 1: moved right · collected 🪙',c:'var(--sage)'},
+      {t:'> Loop 2: moved right · collected 🪙',c:'var(--sage)'},
+      {t:'> Loop 3: moved right · collected 🪙',c:'var(--sage)'},
+      {t:'> Loop 4: moved right · collected 🪙',c:'var(--sage)'},
+      {t:'> Loop 5: moved right · collected 🪙',c:'var(--sage)'},
+      {t:"✅  Done! All 5 coins collected! 🎉",c:'var(--amber2)'},
+    ].forEach((l,i)=>{
+      const d=document.createElement('div');
+      d.textContent=l.t; d.className='out-l'; d.style.color=l.c;
+      panel.appendChild(d);
+      gsap.to(d,{opacity:1,x:0,duration:.3,delay:i*.16,ease:'power2.out'});
+    });
+    runViz();
+    burst(document.getElementById('runBtn'));
+    // update trace
+    const tb=document.getElementById('traceBox'); tb.innerHTML='';
+    correct.forEach((code,i)=>{
+      const d=document.createElement('div');
+      d.innerHTML=`<span style="color:var(--muted2);margin-right:12px">${i+1}</span><span style="color:#60a5fa">${code}</span>`;
+      tb.appendChild(d);
+      gsap.from(d,{opacity:0,x:-8,duration:.3,delay:i*.1});
+    });
+  } else {
+    let hint='⚠️ ';
+    if(!lineState[0]) hint+='Start with the for loop.';
+    else if(lineState[0]!==correct[0]) hint+='Check your loop syntax.';
+    else if(!lineState[1]) hint+='Add move_right() inside the loop.';
+    else hint+='Check the block order — make sure indented blocks go inside the loop.';
+    const d=document.createElement('div');
+    d.textContent=hint; d.className='out-l'; d.style.color='var(--amber)';
+    panel.appendChild(d);
+    gsap.to(d,{opacity:1,x:0,duration:.3});
+    gsap.to('#dz',{x:-5,duration:.05,yoyo:true,repeat:6});
+  }
+});
+
+function runViz(){
+  const cells=document.querySelectorAll('#rg .rc');
+  let step=0, score=0;
+  const sn=document.getElementById('scoreN');
+  function next(){
+    if(step>=5) return;
+    cells[step].classList.remove('bot'); cells[step].textContent='✓'; cells[step].classList.add('done');
+    gsap.from(cells[step],{scale:1.5,duration:.3,ease:'back.out(2)'});
+    if(step+1<5){ cells[step+1].classList.add('bot'); cells[step+1].classList.remove('coin'); cells[step+1].textContent='🤖'; gsap.from(cells[step+1],{scale:.5,duration:.3,ease:'back.out(2)'}); }
+    score++; sn.innerHTML=`${score} <span>coins collected</span>`;
+    gsap.from(sn,{scale:1.3,duration:.25,ease:'back.out(2)'});
+    step++; if(step<5) setTimeout(next,480);
+  }
+  cells[0].textContent='🤖'; cells[0].classList.add('bot'); cells[0].classList.remove('coin');
+  setTimeout(next,350);
+}
+
+// Demo tabs
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+    tab.classList.add('on');
+    ['pane-build','pane-trace','pane-hint'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById('pane-'+tab.dataset.p).style.display='block';
+  });
+});
+
+// Shooting stars
+function shootStar(){
+  const s=document.createElement('div');
+  s.style.cssText=`position:fixed;pointer-events:none;z-index:1;left:${Math.random()*100}%;top:${Math.random()*45}%;width:2px;height:2px;background:var(--cream2);border-radius:50%;opacity:0;`;
+  const tail=document.createElement('div');
+  tail.style.cssText='position:absolute;top:50%;right:0;transform:translateY(-50%);width:90px;height:1px;background:linear-gradient(to left,rgba(253,246,227,.7),transparent)';
+  s.appendChild(tail); document.body.appendChild(s);
+  gsap.timeline({onComplete:()=>s.remove()})
+    .to(s,{opacity:1,duration:.1})
+    .to(s,{x:200,y:120,opacity:0,duration:.9,ease:'power1.in'});
+}
+setInterval(shootStar, 5000);
+</script>
+</body>
+</html>
